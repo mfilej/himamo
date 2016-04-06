@@ -1,0 +1,2 @@
+defmodule Himamo do
+end
