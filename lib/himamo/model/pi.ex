@@ -16,9 +16,7 @@ defmodule Himamo.Model.Pi do
   defstruct [:probs, :n]
 
   @type t :: %__MODULE__{probs: tuple}
-  @type list_of_probabilities :: list(probability)
-  @type probability :: number
-  @type state :: integer
+  @type list_of_probabilities :: list(Himamo.Model.probability)
 
   @doc ~S"""
   Creates a representation of the initial state probabilities.
@@ -33,7 +31,7 @@ defmodule Himamo.Model.Pi do
   @doc ~S"""
   Returns probability of model starting in state `S_i`.
   """
-  @spec get(Himamo.Model.Pi.t, state) :: probability
+  @spec get(Himamo.Model.Pi.t, Himamo.Model.state) :: Himamo.Model.probability
   def get(%__MODULE__{probs: probs, n: n}, i)
     when i >= 0 and i < n,
     do: elem(probs, i)

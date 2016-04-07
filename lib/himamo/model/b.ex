@@ -19,16 +19,13 @@ defmodule Himamo.Model.B do
   """
   defstruct [:map, :m, :n]
 
-  @type t :: %__MODULE__{map: map, m: integer, n: integer}
-  @type probability :: number
-  @type state :: integer
-  @type symbol :: any
-  @type emission :: {state, symbol}
+  @type t :: %__MODULE__{map: map, m: pos_integer, n: pos_integer}
+  @type emission :: {Himamo.Model.state, Himamo.Model.symbol}
 
   @doc ~S"""
   Creates a representation of symbol emission probabilities by state (`m×n`).
   """
-  @spec new(integer, integer) :: Himamo.Model.B.t
+  @spec new(pos_integer, pos_integer) :: Himamo.Model.B.t
   def new(m, n) when m > 0 and n > 0 do
     %__MODULE__{map: Map.new, m: m, n: n}
   end
@@ -36,7 +33,7 @@ defmodule Himamo.Model.B do
   @doc ~S"""
   Returns probability of emitting symbol `v_k` when model is in state `S_j`.
   """
-  @spec get(Himamo.Model.B.t, emission) :: probability
+  @spec get(Himamo.Model.B.t, emission) :: Himamo.Model.probability
   def get(%__MODULE__{map: map, m: m, n: n}, {j, v} = key)
     when j >= 0 and j < n and v >= 0 and v < m,
     do: Map.get(map, key)
@@ -44,7 +41,7 @@ defmodule Himamo.Model.B do
   @doc ~S"""
   Updates probability of emitting symbol `v_k` when model is in state `S_j`.
   """
-  @spec put(Himamo.Model.B.t, emission, probability) :: Himamo.Model.B.t
+  @spec put(Himamo.Model.B.t, emission, Himamo.Model.probability) :: Himamo.Model.B.t
   def put(%__MODULE__{map: map, m: m, n: n} = b, {j, v} = key, val)
     when j >= 0 and j < n and v >= 0 and v < m,
     do: %{b | map: Map.put(map, key, val)}
