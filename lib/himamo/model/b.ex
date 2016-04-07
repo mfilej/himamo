@@ -21,7 +21,7 @@ defmodule Himamo.Model.B do
 
   @type t :: %__MODULE__{map: map, m: integer, n: integer}
   @type probability :: number
-  @type state :: any
+  @type state :: integer
   @type symbol :: any
   @type emission :: {state, symbol}
 
@@ -38,14 +38,14 @@ defmodule Himamo.Model.B do
   """
   @spec get(Himamo.Model.B.t, emission) :: probability
   def get(%__MODULE__{map: map, m: m, n: n}, {j, v} = key)
-  when j >= 0 and j < n and v >= 0 and v < m,
-  do: Map.get(map, key)
+    when j >= 0 and j < n and v >= 0 and v < m,
+    do: Map.get(map, key)
 
   @doc ~S"""
   Updates probability of emitting symbol `v_k` when model is in state `S_j`.
   """
   @spec put(Himamo.Model.B.t, emission, probability) :: Himamo.Model.B.t
   def put(%__MODULE__{map: map, m: m, n: n} = b, {j, v} = key, val)
-  when j >= 0 and j < n and v >= 0 and v < m,
-  do: %{b | map: Map.put(map, key, val)}
+    when j >= 0 and j < n and v >= 0 and v < m,
+    do: %{b | map: Map.put(map, key, val)}
 end

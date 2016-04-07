@@ -20,7 +20,7 @@ defmodule Himamo.Model.A do
 
   @type t :: %__MODULE__{map: map, n: integer}
   @type probability :: number
-  @type state :: any
+  @type state :: integer
   @type transition :: {state, state}
 
   @doc ~S"""
@@ -37,8 +37,8 @@ defmodule Himamo.Model.A do
   """
   @spec get(Himamo.Model.A.t, transition) :: probability
   def get(%__MODULE__{map: map, n: n}, {i, j} = key)
-  when i >= 0 and i < n and j >= 0 and j < n,
-  do: Map.get(map, key)
+    when i >= 0 and i < n and j >= 0 and j < n,
+    do: Map.get(map, key)
 
   @doc ~S"""
   Updates probability of transition to state `S_j` when model is in state
@@ -46,6 +46,6 @@ defmodule Himamo.Model.A do
   """
   @spec put(Himamo.Model.A.t, transition, probability) :: Himamo.Model.A.t
   def put(%__MODULE__{map: map, n: n} = a, {i, j} = key, val)
-  when i >= 0 and i < n and j >= 0 and j < n,
-  do: %{a | map: Map.put(map, key, val)}
+    when i >= 0 and i < n and j >= 0 and j < n,
+    do: %{a | map: Map.put(map, key, val)}
 end
