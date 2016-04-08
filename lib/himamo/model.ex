@@ -13,7 +13,7 @@ defmodule Himamo.Model do
   defstruct [:n, :m, :a, :b, :pi]
 
   @type probability :: float
-  @type state :: integer
+  @type state :: non_neg_integer
   @type symbol :: any
   @type t :: %__MODULE__{
     a: Himamo.Model.A.t,
