@@ -28,4 +28,10 @@ defmodule Himamo.ObsProbTest do
       {0.2, 0.8, 0.8, 0.8, 0.8, 0.2, 0.8},
     }
   end
+
+  test "get" do
+    assert B.get(b, {0, 1}) == 0.5
+    assert B.get(b, {1, 0}) == 0.2
+    assert B.get(b, {1, 1}) == 0.8
+  end
 end

@@ -25,8 +25,10 @@ defmodule Himamo.Model.B do
   @doc ~S"""
   Creates a representation of symbol emission probabilities by state (`m×n`).
   """
-  @spec new(pos_integer, pos_integer) :: Himamo.Model.B.t
-  def new(m, n) when m > 0 and n > 0 do
+  @spec new([m: pos_integer, n: pos_integer]) :: Himamo.Model.B.t
+  def new(kwrd) do
+    m = Keyword.fetch!(kwrd, :m)
+    n = Keyword.fetch!(kwrd, :m)
     %__MODULE__{map: Map.new, m: m, n: n}
   end
 

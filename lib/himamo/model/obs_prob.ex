@@ -9,7 +9,7 @@ defmodule Himamo.Model.ObsProb do
   Internal representation uses a tuple of tuples of size `N×T` where
 
   * `N` - number of states in the model
-  * `T` - observation sequence
+  * `T` - length of observation sequence
 
   This intermediate representation is used by the Baum-Welch algorithm.
   """
@@ -48,5 +48,9 @@ defmodule Himamo.Model.ObsProb do
     end)
     |> Enum.to_list
     |> List.to_tuple
+  end
+
+  def get(%__MODULE__{states: states}, {j, t}) do
+    elem(states, j) |> elem(t)
   end
 end
