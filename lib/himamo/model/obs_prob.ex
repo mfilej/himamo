@@ -18,13 +18,11 @@ defmodule Himamo.Model.ObsProb do
 
   @type t :: %__MODULE__{states: tuple}
 
-  alias Himamo.Model.B
-
   @doc ~S"""
   Creates an `ObsProb` where its `states` are computed (using `b_map/2`) based
   on the given `B` and sequence of observed symbols.
   """
-  @spec new(B.t, list(Himamo.Model.symbol)) :: t
+  @spec new(Himamo.Model.B.t, list(Himamo.Model.symbol)) :: t
   def new(b, observations) when is_list(observations) do
     states = b_map(b, observations)
     %__MODULE__{states: states}
@@ -34,14 +32,15 @@ defmodule Himamo.Model.ObsProb do
   Translates a list of observations into a list of their occurence
   probabilities for each model state.
   """
-  @spec b_map(B.t, list(Himamo.Model.symbol)) :: tuple
-  def b_map(%B{n: num_states} = b, observations) when is_list(observations) do
+  @spec b_map(Himamo.Model.B.t, list(Himamo.Model.symbol)) :: tuple
+  def b_map(b, observations) when is_list(observations) do
     observations = List.to_tuple(observations)
     obs_size = tuple_size(observations)
+    num_states = Himamo.Model.B.num_states(b)
 
     Stream.map(0..num_states-1, fn j ->
       Stream.map(0..obs_size-1, fn t ->
-        B.get(b, {j, elem(observations, t)})
+        Himamo.Model.B.get(b, {j, elem(observations, t)})
       end)
       |> Enum.to_list
       |> List.to_tuple

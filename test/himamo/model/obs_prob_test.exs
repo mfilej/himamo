@@ -4,7 +4,7 @@ defmodule Himamo.ObsProbTest do
   alias Himamo.Model.B
 
   def b do
-    B.new(2, 2)
+    B.new(m: 2, n: 2)
     |> B.put({0, 0}, 0.5)
     |> B.put({0, 1}, 0.5)
     |> B.put({1, 0}, 0.2)
