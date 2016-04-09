@@ -14,19 +14,13 @@ defmodule Himamo.ObsProbTest do
   test "new" do
     observations =  [1, 1, 0]
 
-    %ObsProb{states: states} = ObsProb.new(b, observations)
-    assert states == {
-      {0.5, 0.5, 0.5},
-      {0.8, 0.8, 0.2},
-    }
-  end
-
-  test "b_map" do
-    observations =  [0, 1, 1, 1, 1, 0, 1]
-    assert ObsProb.b_map(b, observations) == {
-      {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      {0.2, 0.8, 0.8, 0.8, 0.8, 0.2, 0.8},
-    }
+    result = ObsProb.new(b, observations)
+    assert ObsProb.get(result, {0, 0}) == 0.5
+    assert ObsProb.get(result, {0, 1}) == 0.5
+    assert ObsProb.get(result, {0, 2}) == 0.5
+    assert ObsProb.get(result, {1, 0}) == 0.8
+    assert ObsProb.get(result, {1, 1}) == 0.8
+    assert ObsProb.get(result, {1, 2}) == 0.2
   end
 
   test "get" do

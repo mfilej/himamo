@@ -23,8 +23,12 @@ defmodule Himamo.Grid do
   Creates a grid of size `width×height`.
   """
   @spec new(pos_integer, pos_integer) :: Himamo.Grid.t
+  @spec new(pos_integer, pos_integer, map) :: Himamo.Grid.t
   def new(width, height) do
     %__MODULE__{grid: Map.new, width: width, height: height}
+  end
+  def new(width, height, grid) do
+    %__MODULE__{grid: grid, width: width, height: height}
   end
 
   @doc ~S"""
