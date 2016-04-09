@@ -18,32 +18,32 @@ defmodule Himamo.Model.A do
   """
   defstruct [:map, :n]
 
-  @type t :: %__MODULE__{map: map, n: pos_integer}
+  @type t :: Himamo.Grid.t
   @type transition :: {Himamo.Model.state, Himamo.Model.state}
 
   @doc ~S"""
   Creates a representation of state transitions between `n×n` states.
   """
-  @spec new(pos_integer) :: Himamo.Model.A.t
+  @spec new(pos_integer) :: t
   def new(n) when n > 0 do
-    %__MODULE__{map: Map.new, n: n}
+    Himamo.Grid.new(n, n)
   end
 
   @doc ~S"""
   Returns probability of transition to state `S_j` when model is in state
   `S_i`.
   """
-  @spec get(Himamo.Model.A.t, transition) :: Himamo.Model.probability
-  def get(%__MODULE__{map: map, n: n}, {i, j} = key)
-    when i >= 0 and i < n and j >= 0 and j < n,
-    do: Map.get(map, key)
+  @spec get(t, transition) :: Himamo.Model.probability
+  def get(a, {i, j}) do
+    Himamo.Grid.get(a, {j, i})
+  end
 
   @doc ~S"""
   Updates probability of transition to state `S_j` when model is in state
   `S_i`.
   """
-  @spec put(Himamo.Model.A.t, transition, Himamo.Model.probability) :: Himamo.Model.A.t
-  def put(%__MODULE__{map: map, n: n} = a, {i, j} = key, val)
-    when i >= 0 and i < n and j >= 0 and j < n,
-    do: %{a | map: Map.put(map, key, val)}
+  @spec put(t, transition, Himamo.Model.probability) :: t
+  def put(a, {i, j}, val) do
+    Himamo.Grid.put(a, {j, i}, val)
+  end
 end

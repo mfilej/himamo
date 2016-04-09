@@ -12,39 +12,43 @@ defmodule Himamo.Model.B do
   ## Examples
 
       # Distribution with 3 states and 4 symbols
-      iex> b = Himamo.Model.B.new(3, 4)
+      iex> b = Himamo.Model.B.new(n: 3, m: 4)
       ...> b = Himamo.Model.B.put(b, {1, 2}, 0.1)
       ...> Himamo.Model.B.get(b, {1, 2})
       0.1
   """
-  defstruct [:map, :m, :n]
-
-  @type t :: %__MODULE__{map: map, m: pos_integer, n: pos_integer}
   @type emission :: {Himamo.Model.state, Himamo.Model.symbol}
+  @type t :: Himamo.Grid
 
   @doc ~S"""
   Creates a representation of symbol emission probabilities by state (`m×n`).
   """
-  @spec new([m: pos_integer, n: pos_integer]) :: Himamo.Model.B.t
-  def new(kwrd) do
-    m = Keyword.fetch!(kwrd, :m)
-    n = Keyword.fetch!(kwrd, :m)
-    %__MODULE__{map: Map.new, m: m, n: n}
+  @spec new([m: pos_integer, n: pos_integer]) :: t
+  def new(kwargs) do
+    m = Keyword.fetch!(kwargs, :m)
+    n = Keyword.fetch!(kwargs, :n)
+    Himamo.Grid.new(m, n)
   end
 
   @doc ~S"""
   Returns probability of emitting symbol `v_k` when model is in state `S_j`.
   """
-  @spec get(Himamo.Model.B.t, emission) :: Himamo.Model.probability
-  def get(%__MODULE__{map: map, m: m, n: n}, {j, v} = key)
-    when j >= 0 and j < n and v >= 0 and v < m,
-    do: Map.get(map, key)
+  @spec get(t, emission) :: Himamo.Model.probability
+  def get(b, {j, v}) do
+    Himamo.Grid.get(b, {v, j})
+  end
 
   @doc ~S"""
   Updates probability of emitting symbol `v_k` when model is in state `S_j`.
   """
-  @spec put(Himamo.Model.B.t, emission, Himamo.Model.probability) :: Himamo.Model.B.t
-  def put(%__MODULE__{map: map, m: m, n: n} = b, {j, v} = key, val)
-    when j >= 0 and j < n and v >= 0 and v < m,
-    do: %{b | map: Map.put(map, key, val)}
+  @spec put(t, emission, Himamo.Model.probability) :: t
+  def put(b, {j, v} ,val) do
+    Himamo.Grid.put(b, {v, j}, val)
+  end
+
+  @doc ~S"""
+  Returns total number of states.
+  """
+  @spec num_states(t) :: pos_integer
+  def num_states(%Himamo.Grid{height: num}), do: num
 end
