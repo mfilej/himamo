@@ -45,6 +45,29 @@ defmodule Himamo.BaumWelchTest do
     ])
   end
 
+  test "compute_beta" do
+    model = %Model{
+      a: a,
+      b: b,
+      pi: Model.Pi.new([0.7, 0.3]),
+      n: 2,
+      m: 2,
+    }
+
+    observations = [0, 1, 1, 2, 1, 0, 1]
+    beta = BaumWelch.compute_beta(model, observations)
+
+    assert_all_in_delta(beta, [
+       {0.00041202932,  0.00050786063},
+       {0.001799348,  0.002203667},
+       {0.0077948,  0.0099071},
+       {0.026528,  0.035702},
+       {0.1292,  0.0818},
+       {0.22,  0.28},
+       {1.0,  1.0},
+    ])
+  end
+
   def assert_all_in_delta(actual, expected)
     when tuple_size(actual) == length(expected) do
     actual = Tuple.to_list(actual)
