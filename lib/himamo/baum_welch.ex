@@ -2,12 +2,12 @@ defmodule Himamo.BaumWelch do
   alias Himamo.Model
 
   @doc ~S"""
-  Compute alpha variable (`α`).
+  Compute alpha variable for Baum-Welch.
 
-  `α_{t,i}` is the probability of being in state `i` after observing the first
-  `t` symbols.
+  `α_t(i)` is the probability of being in state `S_i` at time `t` after
+  observing the first `t` symbols.
 
-  Returns grid of size `T×N` where:
+  Returns tuple of tuples (size `T×N`) where:
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
@@ -45,6 +45,16 @@ defmodule Himamo.BaumWelch do
     [first_row | result] |> List.to_tuple
   end
 
+  @doc ~S"""
+  Compute beta variable for Baum-Welch.
+
+  `ß_t(i)` is the probability of being in state `S_i` at time `t` and
+  observing the partial sequence from `t+1` to the end.
+
+  Returns tuple of tuples (size `T×N`) where:
+  * `T` - length of observation sequence
+  * `N` - number of states in the model
+  """
   @spec compute_beta(Himamo.Model.t, list(Himamo.Model.symbol)) :: tuple
   def compute_beta(%Model{a: a, b: b, n: num_states}, observations) do
     b_map = Model.ObsProb.new(b, observations)
