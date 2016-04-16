@@ -68,14 +68,63 @@ defmodule Himamo.BaumWelchTest do
     ])
   end
 
-  def assert_all_in_delta(actual, expected)
+  test "compute_xi" do
+    model = %Model{
+      a: a,
+      b: b,
+      pi: Model.Pi.new([0.7, 0.3]),
+      n: 2,
+      m: 2,
+    }
+
+    observations = [0, 1, 1, 2, 1, 0, 1]
+    xi = BaumWelch.compute_xi(model, observations)
+    expected = [
+      {{0, 0, 0}, 0.32634936},
+      {{0, 0, 1}, 0.088818014},
+      {{0, 1, 0}, 0.55945605},
+      {{0, 1, 1}, 0.025376575},
+      {{1, 0, 0}, 0.6907178},
+      {{1, 0, 1}, 0.19508762},
+      {{1, 1, 0}, 0.1090607},
+      {{1, 1, 1}, 0.0051338846},
+      {{2, 0, 0}, 0.65325163},
+      {{2, 0, 1}, 0.14652687},
+      {{2, 1, 0}, 0.19300616},
+      {{2, 1, 1}, 0.0072153385},
+      {{3, 0, 0}, 0.74187919},
+      {{3, 0, 1}, 0.1043786},
+      {{3, 1, 0}, 0.15021969},
+      {{3, 1, 1}, 0.0035225234},
+      {{4, 0, 0}, 0.27342969},
+      {{4, 0, 1}, 0.61866919},
+      {{4, 1, 0}, 0.078353627},
+      {{4, 1, 1}, 0.029547496},
+      {{5, 0, 0}, 0.28782271},
+      {{5, 0, 1}, 0.063960603},
+      {{5, 1, 0}, 0.62506609},
+      {{5, 1, 1}, 0.023150596},
+    ] |> Enum.into(Map.new)
+
+    assert_all_in_delta(xi, expected, 5.0e-9)
+  end
+
+  def assert_all_in_delta(actual, expected, delta \\ 1.0e-10)
+  def assert_all_in_delta(actual, expected, delta)
     when tuple_size(actual) == length(expected) do
     actual = Tuple.to_list(actual)
 
     Enum.zip(actual, expected)
     |>Enum.each(fn {{actual_p1, actual_p2}, {expected_p1, expected_p2}} ->
-      assert_in_delta(actual_p1, expected_p1, 1.0e-10)
-      assert_in_delta(actual_p2, expected_p2, 1.0e-10)
+      assert_in_delta(actual_p1, expected_p1, delta)
+      assert_in_delta(actual_p2, expected_p2, delta)
+    end)
+  end
+  def assert_all_in_delta(%Himamo.Matrix{map: map} = _actual, expected, delta)
+    when map_size(map) == map_size(expected) do
+    Enum.each(map, fn({position, entry}) ->
+      expected_value = Map.fetch!(expected, position)
+      assert_in_delta(entry, expected_value, delta)
     end)
   end
 end
