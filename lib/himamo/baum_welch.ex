@@ -1,5 +1,5 @@
 defmodule Himamo.BaumWelch do
-  alias Himamo.Model
+  alias Himamo.{Matrix, Model}
 
   @doc ~S"""
   Compute alpha variable for Baum-Welch.
@@ -131,7 +131,7 @@ defmodule Himamo.BaumWelch do
         {{t, i, j}, numerator/denominator}
       end)
     end)
-    |> Enum.into(Himamo.Matrix.new({obs_size-1, num_states, num_states}))
+    |> Enum.into(Matrix.new({obs_size-1, num_states, num_states}))
   end
 
   @doc ~S"""
@@ -144,5 +144,20 @@ defmodule Himamo.BaumWelch do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  def compute_gamma
+  def compute_gamma(%Model{n: num_states} = model, observations) do
+    xi = compute_xi(model, observations)
+    obs_size = length(observations)
+
+    Enum.flat_map(0..obs_size-2, fn(t) ->
+      Enum.map(0..num_states-1, fn(i) ->
+        sum = Enum.map(0..num_states-1, fn(j) ->
+          Matrix.get(xi, {t, i, j})
+        end)
+        |> Enum.sum
+
+        {{t, i}, sum}
+      end)
+    end)
+    |> Enum.into(Matrix.new({obs_size-1, num_states}))
+  end
 end
