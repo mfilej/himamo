@@ -15,7 +15,7 @@ defmodule Himamo.MatrixTest do
     end
   end
 
-  test "inserting into positions out of bounds" do
+  test "updating positions out of bounds" do
     matrix = Matrix.new({2, 3, 4})
 
     assert_raise ArgumentError, fn ->
