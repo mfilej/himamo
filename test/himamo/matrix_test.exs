@@ -9,6 +9,10 @@ defmodule Himamo.MatrixTest do
     assert_raise KeyError, fn ->
       Matrix.get(matrix, {0, 0})
     end
+
+    assert_raise KeyError, fn ->
+      Matrix.get(matrix, {4, 4})
+    end
   end
 
   test "inserting into positions out of bounds" do

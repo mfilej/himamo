@@ -18,7 +18,7 @@ defmodule Himamo.Model.B do
       0.1
   """
   @type emission :: {Himamo.Model.state, Himamo.Model.symbol}
-  @type t :: Himamo.Grid
+  @type t :: Himamo.Matrix
 
   @doc ~S"""
   Creates a representation of symbol emission probabilities by state (`m×n`).
@@ -27,7 +27,7 @@ defmodule Himamo.Model.B do
   def new(kwargs) do
     m = Keyword.fetch!(kwargs, :m)
     n = Keyword.fetch!(kwargs, :n)
-    Himamo.Grid.new(m, n)
+    Himamo.Matrix.new({m, n})
   end
 
   @doc ~S"""
@@ -35,7 +35,7 @@ defmodule Himamo.Model.B do
   """
   @spec get(t, emission) :: Himamo.Model.probability
   def get(b, {j, v}) do
-    Himamo.Grid.get(b, {v, j})
+    Himamo.Matrix.get(b, {v, j})
   end
 
   @doc ~S"""
@@ -43,12 +43,12 @@ defmodule Himamo.Model.B do
   """
   @spec put(t, emission, Himamo.Model.probability) :: t
   def put(b, {j, v} ,val) do
-    Himamo.Grid.put(b, {v, j}, val)
+    Himamo.Matrix.put(b, {v, j}, val)
   end
 
   @doc ~S"""
   Returns total number of states.
   """
   @spec num_states(t) :: pos_integer
-  def num_states(%Himamo.Grid{height: num}), do: num
+  def num_states(%Himamo.Matrix{size: {_alphabet_size, num_states}}), do: num_states
 end

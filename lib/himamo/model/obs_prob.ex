@@ -15,7 +15,7 @@ defmodule Himamo.Model.ObsProb do
   """
 
   @type occurrence :: {Himamo.Model.state, Himamo.Model.symbol}
-  @type t :: Himamo.Grid.t
+  @type t :: Himamo.Matrix.t
 
   @doc ~S"""
   Creates an `ObsProb` where its `states` are computed (using `b_map/2`) based
@@ -25,8 +25,9 @@ defmodule Himamo.Model.ObsProb do
   def new(b, observations) when is_list(observations) do
     num_obs = length(observations)
     num_states = Himamo.Model.B.num_states(b)
-    states = b_map(b, observations)
-    Himamo.Grid.new(num_obs, num_states, states)
+
+    b_map(b, observations)
+    |> Enum.into(Himamo.Matrix.new({num_states, num_obs}))
   end
 
   @doc ~S"""
@@ -36,7 +37,7 @@ defmodule Himamo.Model.ObsProb do
   """
   @spec get(t, occurrence) :: Himamo.Model.probability
   def get(grid, key) do
-    Himamo.Grid.get(grid, key)
+    Himamo.Matrix.get(grid, key)
   end
 
   defp b_map(b, observations) when is_list(observations) do

@@ -18,7 +18,7 @@ defmodule Himamo.Model.A do
   """
   defstruct [:map, :n]
 
-  @type t :: Himamo.Grid.t
+  @type t :: Himamo.Matrix.t
   @type transition :: {Himamo.Model.state, Himamo.Model.state}
 
   @doc ~S"""
@@ -26,7 +26,7 @@ defmodule Himamo.Model.A do
   """
   @spec new(pos_integer) :: t
   def new(n) when n > 0 do
-    Himamo.Grid.new(n, n)
+    Himamo.Matrix.new({n, n})
   end
 
   @doc ~S"""
@@ -35,7 +35,7 @@ defmodule Himamo.Model.A do
   """
   @spec get(t, transition) :: Himamo.Model.probability
   def get(a, {i, j}) do
-    Himamo.Grid.get(a, {j, i})
+    Himamo.Matrix.get(a, {j, i})
   end
 
   @doc ~S"""
@@ -44,6 +44,6 @@ defmodule Himamo.Model.A do
   """
   @spec put(t, transition, Himamo.Model.probability) :: t
   def put(a, {i, j}, val) do
-    Himamo.Grid.put(a, {j, i}, val)
+    Himamo.Matrix.put(a, {j, i}, val)
   end
 end
