@@ -18,7 +18,7 @@ defmodule Himamo.Model.B do
       0.1
   """
   @type emission :: {Himamo.Model.state, Himamo.Model.symbol}
-  @type t :: Himamo.Matrix
+  @type t :: Himamo.Matrix.t
 
   @doc ~S"""
   Creates a representation of symbol emission probabilities by state (`m×n`).
