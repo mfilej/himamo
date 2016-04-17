@@ -2,7 +2,7 @@ defmodule Himamo.BaumWelch do
   alias Himamo.{Matrix, Model}
 
   @doc ~S"""
-  Compute alpha variable for Baum-Welch.
+  Computes alpha variable for Baum-Welch.
 
   `α_t(i)` is the probability of being in state `S_i` at time `t` after
   observing the first `t` symbols.
@@ -46,7 +46,7 @@ defmodule Himamo.BaumWelch do
   end
 
   @doc ~S"""
-  Compute beta variable for Baum-Welch.
+  Computes beta variable for Baum-Welch.
 
   `ß_t(i)` is the probability of being in state `S_i` at time `t` and
   observing the partial sequence from `t+1` to the end.
@@ -84,7 +84,7 @@ defmodule Himamo.BaumWelch do
   end
 
   @doc ~S"""
-  Compute xi variable for Baum-Welch.
+  Computes xi variable for Baum-Welch.
 
   `ξ_t(i,j)` is the probability of being in state `S_i` at time `t` and in
   state `S_j` at time `t+1` given the full observation sequence.
@@ -135,7 +135,7 @@ defmodule Himamo.BaumWelch do
   end
 
   @doc ~S"""
-  Compute gamma variable for Baum-Welch.
+  Computes gamma variable for Baum-Welch.
 
   `γ_t(i)` is the probability of being in state `S_i` at time `t` given the
   full observation sequence.
