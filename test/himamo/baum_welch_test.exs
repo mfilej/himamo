@@ -164,6 +164,32 @@ defmodule Himamo.BaumWelchTest do
     assert_all_in_delta(a, expected, 5.0e-9)
   end
 
+  test "reestimate_b" do
+    model = %Model{
+      a: a,
+      b: b,
+      pi: Model.Pi.new([0.7, 0.3]),
+      n: 2,
+      m: 3,
+    }
+
+    observations = [0, 1, 1, 2, 1, 0, 1]
+    gamma = BaumWelch.compute_gamma(model, observations)
+
+    b = BaumWelch.reestimate_b(model, observations, gamma: gamma)
+
+    expected = [
+      {{0, 0}, 0.183004200},
+      {{0, 1}, 0.615067920},
+      {{0, 2}, 0.201927880},
+      {{1, 0}, 0.681578330},
+      {{1, 1}, 0.233439370},
+      {{1, 2}, 0.084982295},
+    ] |> Enum.into(Map.new)
+
+    assert_all_in_delta(b, expected, 5.0e-9)
+  end
+
   def assert_all_in_delta(actual, expected, delta \\ 1.0e-10)
   def assert_all_in_delta(actual, expected, delta)
     when tuple_size(actual) == length(expected) do
