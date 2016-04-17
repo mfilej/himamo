@@ -93,6 +93,7 @@ defmodule Himamo.BaumWelch do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
+  @spec compute_xi(Himamo.Model.t, list(Himamo.Model.symbol)) :: Matrix.t
   def compute_xi(%Model{a: a, b: b, n: num_states} = model, observations) do
     b_map = Model.ObsProb.new(b, observations)
     obs_size = length(observations)
@@ -144,6 +145,7 @@ defmodule Himamo.BaumWelch do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
+  @spec compute_gamma(Himamo.Model.t, list(Himamo.Model.symbol)) :: Matrix.t
   def compute_gamma(%Model{n: num_states} = model, observations) do
     xi = compute_xi(model, observations)
     obs_size = length(observations)
