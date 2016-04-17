@@ -162,4 +162,38 @@ defmodule Himamo.BaumWelch do
     end)
     |> Enum.into(Matrix.new({obs_size-1, num_states}))
   end
+
+  @doc ~S"""
+  Re-estimates the transition matrix `A`.
+
+  Requires the following arguments:
+    * `num_states` - number of states of the model being re-estimated (`N`).
+    * `obs_len` - observation sequence length (`T`).
+    * `xi` - the computed variable `ξ` (see `compute_xi/2`).
+    * `gamma` - the computed variable `γ`.
+
+  Each entry in `A=[a_{i,j}]` is recomputed as: expected number of transitions
+  from state `S_i` to state `S_j` divided by the expected number of
+  transitions from state `S_j`.
+
+  This is part of the _M_ step of Baum-Welch.
+  """
+  @spec reestimate_a(non_neg_integer, non_neg_integer, [xi: Matrix.t, gamma: Matrix.t]) :: Matrix.t
+  def reestimate_a(num_states, obs_len, xi: xi, gamma: gamma) do
+    states_range = 0..num_states-1
+
+    Enum.flat_map(states_range, fn(i) ->
+      Enum.map(states_range, fn(j) ->
+        {numerator, denominator} =
+          Enum.reduce(0..obs_len-2, {0, 0}, fn (t, {numer, denom}) ->
+            new_numer = numer + Matrix.get(xi, {t, i, j})
+            new_denom = denom + Matrix.get(gamma, {t, i})
+            {new_numer, new_denom}
+          end)
+
+        {{i, j}, numerator/denominator}
+      end)
+    end)
+    |> Enum.into(Matrix.new({num_states, num_states}))
+  end
 end
