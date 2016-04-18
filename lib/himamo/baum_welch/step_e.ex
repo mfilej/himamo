@@ -56,32 +56,31 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_beta(Model.t, list(Model.symbol)) :: tuple
+  @spec compute_beta(Model.t, list(Model.symbol)) :: Matrix.t
   def compute_beta(%Model{a: a, b: b, n: num_states}, observations) do
     b_map = Model.ObsProb.new(b, observations)
-    obs_size = length(observations)
+    obs_len = length(observations)
 
     states_range = 0..num_states-1
 
     # initialization
-    last_row = Tuple.duplicate(1, num_states)
+    last_row = for j <- states_range do
+      {{obs_len-1, j}, 1}
+    end |> Enum.into(Matrix.new({obs_len, num_states}))
 
     # induction
-    Enum.reduce((obs_size-2)..0, [last_row], fn(t, [prev_row|_] = rows) ->
-      new_row = Enum.map(states_range, fn i ->
-        Stream.map(states_range, fn j ->
+    Enum.reduce((obs_len-2)..0, last_row, fn(t, partial_beta) ->
+      for i <- states_range do
+        sum = for j <- states_range do
           transition_prob = Model.A.get(a, {i, j})
           emission_prob = Model.ObsProb.get(b_map, {j, t+1})
-          prev_beta = elem(prev_row, j)
+          prev_beta = Matrix.get(partial_beta, {t+1, j})
           transition_prob * emission_prob * prev_beta
-        end)
-        |> Enum.sum
-      end)
-      |> List.to_tuple
+        end |> Enum.sum
 
-      [new_row | rows]
+        {{t, i}, sum}
+      end |> Enum.into(partial_beta)
     end)
-    |> List.to_tuple
   end
 
   @doc ~S"""
@@ -117,7 +116,7 @@ defmodule Himamo.BaumWelch.StepE do
         curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
         curr_b_map = Model.ObsProb.get(b_map, {j, t+1})
-        curr_beta = beta |> elem(t+1) |> elem(j)
+        curr_beta = Matrix.get(beta, {t+1, j})
 
         curr_alpha * curr_a * curr_b_map * curr_beta
       end)
@@ -127,7 +126,7 @@ defmodule Himamo.BaumWelch.StepE do
         curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
         curr_b_map = Model.ObsProb.get(b_map, {j, t+1})
-        curr_beta = beta |> elem(t+1) |> elem(j)
+        curr_beta = Matrix.get(beta, {t+1, j})
         numerator = curr_alpha * curr_a * curr_b_map * curr_beta
 
         {{t, i, j}, numerator/denominator}
