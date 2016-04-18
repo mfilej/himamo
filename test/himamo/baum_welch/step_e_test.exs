@@ -30,7 +30,7 @@ defmodule Himamo.BaumWelch.StepETest do
       b: b,
       pi: Model.Pi.new([0.7, 0.3]),
       n: 2,
-      m: 2,
+      m: 3,
     }
 
     observations = [0, 1, 1, 2, 1, 0, 1]
@@ -53,7 +53,7 @@ defmodule Himamo.BaumWelch.StepETest do
       b: b,
       pi: Model.Pi.new([0.7, 0.3]),
       n: 2,
-      m: 2,
+      m: 3,
     }
 
     observations = [0, 1, 1, 2, 1, 0, 1]
@@ -76,7 +76,7 @@ defmodule Himamo.BaumWelch.StepETest do
       b: b,
       pi: Model.Pi.new([0.7, 0.3]),
       n: 2,
-      m: 2,
+      m: 3,
     }
 
     observations = [0, 1, 1, 2, 1, 0, 1]
@@ -117,7 +117,7 @@ defmodule Himamo.BaumWelch.StepETest do
       b: b,
       pi: Model.Pi.new([0.7, 0.3]),
       n: 2,
-      m: 2,
+      m: 3,
     }
 
     observations = [0, 1, 1, 2, 1, 0, 1]
