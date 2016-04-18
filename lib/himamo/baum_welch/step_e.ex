@@ -25,24 +25,23 @@ defmodule Himamo.BaumWelch.StepE do
     states_range = 0..num_states-1
 
     # initialization
-    first_row = Enum.map(states_range, fn j ->
-      Model.Pi.get(pi, j) * Model.ObsProb.get(b_map, {j, 0})
-    end)
-    |> List.to_tuple
+    first_row =
+      for j <- states_range do
+        Model.Pi.get(pi, j) * Model.ObsProb.get(b_map, {j, 0})
+      end
+      |> List.to_tuple
 
     # induction
     {result, _} = Enum.map_reduce((1..obs_len-1), first_row, fn(t, prev_row) ->
-      new_row = Enum.map(states_range, fn j ->
-        sum = Stream.map(states_range, fn i ->
+      new_row = for j <- states_range do
+        sum = for i <- states_range do
           elem(prev_row, i) * Model.A.get(a, {i, j})
-        end)
-        |> Enum.sum
+        end |> Enum.sum
 
         rhs = Model.ObsProb.get(b_map, {j, t})
 
         sum * rhs
-      end)
-      |> List.to_tuple
+      end |> List.to_tuple
 
       {new_row, new_row}
     end)
