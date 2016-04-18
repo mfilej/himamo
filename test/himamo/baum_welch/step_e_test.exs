@@ -1,40 +1,38 @@
 defmodule Himamo.BaumWelch.StepETest do
   use ExUnit.Case
   import TestHelpers.AllInDelta
-  alias Himamo.Model
+  alias Himamo.{Model, ObsSeq}
   alias Himamo.BaumWelch.StepE
 
   def a do
     import Model.A, only: [new: 1, put: 3]
     new(2)
-    |> put({0, 0}, 0.6)
-    |> put({0, 1}, 0.4)
-    |> put({1, 0}, 0.9)
-    |> put({1, 1}, 0.1)
+    |> put({0, 0}, 0.6) |> put({0, 1}, 0.4)
+    |> put({1, 0}, 0.9) |> put({1, 1}, 0.1)
   end
 
   def b do
     import Model.B, only: [new: 1, put: 3]
     new(n: 2, m: 3)
-    |> put({0, 0}, 0.3)
-    |> put({0, 1}, 0.3)
-    |> put({0, 2}, 0.4)
-    |> put({1, 0}, 0.8)
-    |> put({1, 1}, 0.1)
-    |> put({1, 2}, 0.1)
+    |> put({0, 0}, 0.3) |> put({0, 1}, 0.3) |> put({0, 2}, 0.4)
+    |> put({1, 0}, 0.8) |> put({1, 1}, 0.1) |> put({1, 2}, 0.1)
+  end
+
+  def model, do: %Model{
+    a: a,
+    b: b,
+    pi: Model.Pi.new([0.7, 0.3]),
+    n: 2,
+    m: 3,
+  }
+
+  def observation do
+    ObsSeq.new([0, 1, 1, 2, 1, 0, 1])
+    |> ObsSeq.compute_prob(b)
   end
 
   test "compute_alpha" do
-    model = %Model{
-      a: a,
-      b: b,
-      pi: Model.Pi.new([0.7, 0.3]),
-      n: 2,
-      m: 3,
-    }
-
-    observations = [0, 1, 1, 2, 1, 0, 1]
-    alpha = StepE.compute_alpha(model, observations)
+    alpha = StepE.compute_alpha(model, observation)
 
     expected = [
       {{0, 0}, 0.21},
@@ -57,16 +55,7 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_beta" do
-    model = %Model{
-      a: a,
-      b: b,
-      pi: Model.Pi.new([0.7, 0.3]),
-      n: 2,
-      m: 3,
-    }
-
-    observations = [0, 1, 1, 2, 1, 0, 1]
-    beta = StepE.compute_beta(model, observations)
+    beta = StepE.compute_beta(model, observation)
 
     expected = [
       {{0, 0}, 0.00041202932},
@@ -89,16 +78,8 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_xi" do
-    model = %Model{
-      a: a,
-      b: b,
-      pi: Model.Pi.new([0.7, 0.3]),
-      n: 2,
-      m: 3,
-    }
+    xi = StepE.compute_xi(model, observation)
 
-    observations = [0, 1, 1, 2, 1, 0, 1]
-    xi = StepE.compute_xi(model, observations)
     expected = [
       {{0, 0, 0}, 0.3263493600},
       {{0, 0, 1}, 0.0888180140},
@@ -130,16 +111,7 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_gamma" do
-    model = %Model{
-      a: a,
-      b: b,
-      pi: Model.Pi.new([0.7, 0.3]),
-      n: 2,
-      m: 3,
-    }
-
-    observations = [0, 1, 1, 2, 1, 0, 1]
-    gamma = StepE.compute_gamma(model, observations)
+   gamma = StepE.compute_gamma(model, observation)
 
     expected = [
       {{0, 0}, 0.41516738},

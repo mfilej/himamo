@@ -5,7 +5,7 @@ defmodule Himamo.BaumWelch.StepE do
   Calculates required statistics for the given model.
   """
 
-  alias Himamo.{Matrix, Model}
+  alias Himamo.{Matrix, Model, ObsSeq}
 
   @doc ~S"""
   Computes alpha variable for Baum-Welch.
@@ -17,24 +17,22 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_alpha(Model.t, list(Model.symbol)) :: Matrix.t
-  def compute_alpha(%Model{a: a, b: b, pi: pi, n: num_states}, observations) do
-    b_map = Model.ObsProb.new(b, observations)
+  @spec compute_alpha(Model.t, ObsSeq.t) :: Matrix.t
+  def compute_alpha(%Model{a: a, pi: pi, n: num_states}, %ObsSeq{seq_len: seq_len, prob: obs_prob}) do
     states_range = 0..num_states-1
-    obs_len = length(observations)
-    obs_range = 1..obs_len-1
+    obs_range = 1..seq_len-1
 
     # initialization
     first_row =
       for j <- states_range do
-        {{0, j}, Model.Pi.get(pi, j) * Model.ObsProb.get(b_map, {j, 0})}
+        {{0, j}, Model.Pi.get(pi, j) * Model.ObsProb.get(obs_prob, {j, 0})}
       end
-      |> Enum.into(Matrix.new({obs_len, num_states}))
+      |> Enum.into(Matrix.new({seq_len, num_states}))
 
     # induction
     Enum.reduce(obs_range, first_row, fn(t, partial_alpha) ->
       for j <- states_range do
-        rhs = Model.ObsProb.get(b_map, {j, t})
+        rhs = Model.ObsProb.get(obs_prob, {j, t})
         sum =
           for i <- states_range do
             Matrix.get(partial_alpha, {t-1, i}) * Model.A.get(a, {i, j})
@@ -56,24 +54,21 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_beta(Model.t, list(Model.symbol)) :: Matrix.t
-  def compute_beta(%Model{a: a, b: b, n: num_states}, observations) do
-    b_map = Model.ObsProb.new(b, observations)
-    obs_len = length(observations)
-
+  @spec compute_beta(Model.t, ObsSeq.t) :: Matrix.t
+  def compute_beta(%Model{a: a, n: num_states}, %ObsSeq{seq_len: seq_len, prob: obs_prob}) do
     states_range = 0..num_states-1
 
     # initialization
     last_row = for j <- states_range do
-      {{obs_len-1, j}, 1}
-    end |> Enum.into(Matrix.new({obs_len, num_states}))
+      {{seq_len-1, j}, 1}
+    end |> Enum.into(Matrix.new({seq_len, num_states}))
 
     # induction
-    Enum.reduce((obs_len-2)..0, last_row, fn(t, partial_beta) ->
+    Enum.reduce((seq_len-2)..0, last_row, fn(t, partial_beta) ->
       for i <- states_range do
         sum = for j <- states_range do
           transition_prob = Model.A.get(a, {i, j})
-          emission_prob = Model.ObsProb.get(b_map, {j, t+1})
+          emission_prob = Model.ObsProb.get(obs_prob, {j, t+1})
           prev_beta = Matrix.get(partial_beta, {t+1, j})
           transition_prob * emission_prob * prev_beta
         end |> Enum.sum
@@ -93,13 +88,10 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_xi(Model.t, list(Model.symbol)) :: Matrix.t
-  def compute_xi(%Model{a: a, b: b, n: num_states} = model, observations) do
-    b_map = Model.ObsProb.new(b, observations)
-    obs_size = length(observations)
-
-    alpha = compute_alpha(model, observations)
-    beta = compute_beta(model, observations)
+  @spec compute_xi(Model.t, ObsSeq.t) :: Matrix.t
+  def compute_xi(%Model{a: a, n: num_states} = model, %ObsSeq{seq_len: seq_len, prob: obs_prob} = observation) do
+    alpha = compute_alpha(model, observation)
+    beta = compute_beta(model, observation)
 
     states_range = 0..num_states-1
 
@@ -111,11 +103,11 @@ defmodule Himamo.BaumWelch.StepE do
       end)
     end
 
-    Enum.flat_map((0..obs_size-2), fn(t) ->
+    Enum.flat_map((0..seq_len-2), fn(t) ->
       denominator = map_states_2d.(fn({i, j}) ->
         curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
-        curr_b_map = Model.ObsProb.get(b_map, {j, t+1})
+        curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
         curr_beta = Matrix.get(beta, {t+1, j})
 
         curr_alpha * curr_a * curr_b_map * curr_beta
@@ -125,14 +117,14 @@ defmodule Himamo.BaumWelch.StepE do
       map_states_2d.(fn({i, j}) ->
         curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
-        curr_b_map = Model.ObsProb.get(b_map, {j, t+1})
+        curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
         curr_beta = Matrix.get(beta, {t+1, j})
         numerator = curr_alpha * curr_a * curr_b_map * curr_beta
 
         {{t, i, j}, numerator/denominator}
       end)
     end)
-    |> Enum.into(Matrix.new({obs_size-1, num_states, num_states}))
+    |> Enum.into(Matrix.new({seq_len-1, num_states, num_states}))
   end
 
   @doc ~S"""
@@ -145,12 +137,12 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_gamma(Model.t, list(Model.symbol)) :: Matrix.t
-  def compute_gamma(%Model{n: num_states} = model, observations) do
-    xi = compute_xi(model, observations)
-    obs_size = length(observations)
+  @spec compute_gamma(Model.t, ObsSeq.t) :: Matrix.t
+  def compute_gamma(%Model{n: num_states} = model, observation) do
+    seq_len = observation.seq_len
+    xi = compute_xi(model, observation)
 
-    Enum.flat_map(0..obs_size-2, fn(t) ->
+    Enum.flat_map(0..seq_len-2, fn(t) ->
       Enum.map(0..num_states-1, fn(i) ->
         sum = Enum.map(0..num_states-1, fn(j) ->
           Matrix.get(xi, {t, i, j})
@@ -160,6 +152,6 @@ defmodule Himamo.BaumWelch.StepE do
         {{t, i}, sum}
       end)
     end)
-    |> Enum.into(Matrix.new({obs_size-1, num_states}))
+    |> Enum.into(Matrix.new({seq_len-1, num_states}))
   end
 end

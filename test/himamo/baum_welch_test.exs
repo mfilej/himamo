@@ -1,7 +1,7 @@
 defmodule Himamo.BaumWelchTest do
   use ExUnit.Case
   import TestHelpers.AllInDelta
-  alias Himamo.{BaumWelch, Model}
+  alias Himamo.{BaumWelch, Model, ObsSeq}
 
   def a do
     import Model.A, only: [new: 1, put: 3]
@@ -23,20 +23,24 @@ defmodule Himamo.BaumWelchTest do
     |> put({1, 2}, 0.1)
   end
 
+  def model, do: %Model{
+    a: a,
+    b: b,
+    pi: Model.Pi.new([0.7, 0.3]),
+    n: 2,
+    m: 3,
+  }
+
+  def observation do
+    ObsSeq.new([0, 1, 1, 2, 1, 0, 1])
+    |> ObsSeq.compute_prob(b)
+  end
+
   test "reestimate_a" do
-    model = %Model{
-      a: a,
-      b: b,
-      pi: Model.Pi.new([0.7, 0.3]),
-      n: 2,
-      m: 3,
-    }
+    xi = BaumWelch.StepE.compute_xi(model, observation)
+    gamma = BaumWelch.StepE.compute_gamma(model, observation)
 
-    observations = [0, 1, 1, 2, 1, 0, 1]
-    xi = BaumWelch.StepE.compute_xi(model, observations)
-    gamma = BaumWelch.StepE.compute_gamma(model, observations)
-
-    a = BaumWelch.reestimate_a(2, length(observations), xi: xi, gamma: gamma)
+    a = BaumWelch.reestimate_a(2, observation.seq_len, xi: xi, gamma: gamma)
 
     expected = [
       {{0, 0}, 0.709503110},
@@ -49,18 +53,9 @@ defmodule Himamo.BaumWelchTest do
   end
 
   test "reestimate_b" do
-    model = %Model{
-      a: a,
-      b: b,
-      pi: Model.Pi.new([0.7, 0.3]),
-      n: 2,
-      m: 3,
-    }
+    gamma = BaumWelch.StepE.compute_gamma(model, observation)
 
-    observations = [0, 1, 1, 2, 1, 0, 1]
-    gamma = BaumWelch.StepE.compute_gamma(model, observations)
-
-    b = BaumWelch.reestimate_b(model, observations, gamma: gamma)
+    b = BaumWelch.reestimate_b(model, observation.seq, gamma: gamma)
 
     expected = [
       {{0, 0}, 0.183004200},
