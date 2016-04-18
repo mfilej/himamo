@@ -17,36 +17,33 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_alpha(Model.t, list(Model.symbol)) :: tuple
+  @spec compute_alpha(Model.t, list(Model.symbol)) :: Matrix.t
   def compute_alpha(%Model{a: a, b: b, pi: pi, n: num_states}, observations) do
     b_map = Model.ObsProb.new(b, observations)
-    obs_len = length(observations)
-
     states_range = 0..num_states-1
+    obs_len = length(observations)
+    obs_range = 1..obs_len-1
 
     # initialization
     first_row =
       for j <- states_range do
-        Model.Pi.get(pi, j) * Model.ObsProb.get(b_map, {j, 0})
+        {{0, j}, Model.Pi.get(pi, j) * Model.ObsProb.get(b_map, {j, 0})}
       end
-      |> List.to_tuple
+      |> Enum.into(Matrix.new({obs_len, num_states}))
 
     # induction
-    {result, _} = Enum.map_reduce((1..obs_len-1), first_row, fn(t, prev_row) ->
-      new_row = for j <- states_range do
-        sum = for i <- states_range do
-          elem(prev_row, i) * Model.A.get(a, {i, j})
-        end |> Enum.sum
-
+    Enum.reduce(obs_range, first_row, fn(t, partial_alpha) ->
+      for j <- states_range do
         rhs = Model.ObsProb.get(b_map, {j, t})
+        sum =
+          for i <- states_range do
+            Matrix.get(partial_alpha, {t-1, i}) * Model.A.get(a, {i, j})
+          end |> Enum.sum
 
-        sum * rhs
-      end |> List.to_tuple
-
-      {new_row, new_row}
+        {{t, j}, rhs * sum}
+      end
+      |> Enum.into(partial_alpha)
     end)
-
-    [first_row | result] |> List.to_tuple
   end
 
   @doc ~S"""
@@ -117,7 +114,7 @@ defmodule Himamo.BaumWelch.StepE do
 
     Enum.flat_map((0..obs_size-2), fn(t) ->
       denominator = map_states_2d.(fn({i, j}) ->
-        curr_alpha = alpha |> elem(t) |> elem(i)
+        curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
         curr_b_map = Model.ObsProb.get(b_map, {j, t+1})
         curr_beta = beta |> elem(t+1) |> elem(j)
@@ -127,7 +124,7 @@ defmodule Himamo.BaumWelch.StepE do
       |> Enum.sum
 
       map_states_2d.(fn({i, j}) ->
-        curr_alpha = alpha |> elem(t) |> elem(i)
+        curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
         curr_b_map = Model.ObsProb.get(b_map, {j, t+1})
         curr_beta = beta |> elem(t+1) |> elem(j)
