@@ -31,9 +31,11 @@ defmodule Himamo.BaumWelch.StepETest do
     |> ObsSeq.compute_prob(b)
   end
 
-  test "compute_alpha" do
-    alpha = StepE.compute_alpha(model, observation)
+  def alpha, do: StepE.compute_alpha(model, observation)
+  def beta, do: StepE.compute_beta(model, observation)
+  def xi, do: StepE.compute_xi(model, observation, alpha: alpha, beta: beta)
 
+  test "compute_alpha" do
     expected = [
       {{0, 0}, 0.21},
       {{0, 1}, 0.24},
@@ -55,8 +57,6 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_beta" do
-    beta = StepE.compute_beta(model, observation)
-
     expected = [
       {{0, 0}, 0.00041202932},
       {{0, 1}, 0.00050786063},
@@ -78,7 +78,7 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_xi" do
-    xi = StepE.compute_xi(model, observation)
+    xi = StepE.compute_xi(model, observation, alpha: alpha, beta: beta)
 
     expected = [
       {{0, 0, 0}, 0.3263493600},
@@ -111,7 +111,7 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_gamma" do
-   gamma = StepE.compute_gamma(model, observation)
+   gamma = StepE.compute_gamma(model, observation, xi: xi)
 
     expected = [
       {{0, 0}, 0.41516738},

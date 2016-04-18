@@ -88,11 +88,13 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_xi(Model.t, ObsSeq.t) :: Matrix.t
-  def compute_xi(%Model{a: a, n: num_states} = model, %ObsSeq{seq_len: seq_len, prob: obs_prob} = observation) do
-    alpha = compute_alpha(model, observation)
-    beta = compute_beta(model, observation)
-
+  @spec compute_xi(Model.t, ObsSeq.t, [alpha: Matrix.t, beta: Matrix.t]) :: Matrix.t
+  def compute_xi(
+    %Model{a: a, n: num_states},
+    %ObsSeq{seq_len: seq_len, prob: obs_prob},
+    alpha: alpha,
+    beta: beta
+  ) do
     states_range = 0..num_states-1
 
     map_states_2d = fn(fun) ->
@@ -137,10 +139,9 @@ defmodule Himamo.BaumWelch.StepE do
   * `T` - length of observation sequence
   * `N` - number of states in the model
   """
-  @spec compute_gamma(Model.t, ObsSeq.t) :: Matrix.t
-  def compute_gamma(%Model{n: num_states} = model, observation) do
+  @spec compute_gamma(Model.t, ObsSeq.t, [xi: Matrix.t]) :: Matrix.t
+  def compute_gamma(%Model{n: num_states}, observation, xi: xi) do
     seq_len = observation.seq_len
-    xi = compute_xi(model, observation)
 
     Enum.flat_map(0..seq_len-2, fn(t) ->
       Enum.map(0..num_states-1, fn(i) ->
