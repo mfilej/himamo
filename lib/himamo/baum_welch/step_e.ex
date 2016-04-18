@@ -20,8 +20,7 @@ defmodule Himamo.BaumWelch.StepE do
   @spec compute_alpha(Model.t, list(Model.symbol)) :: tuple
   def compute_alpha(%Model{a: a, b: b, pi: pi, n: num_states}, observations) do
     b_map = Model.ObsProb.new(b, observations)
-    observations = List.to_tuple(observations)
-    obs_size = tuple_size(observations)
+    obs_len = length(observations)
 
     states_range = 0..num_states-1
 
@@ -32,7 +31,7 @@ defmodule Himamo.BaumWelch.StepE do
     |> List.to_tuple
 
     # induction
-    {result, _} = Enum.map_reduce((1..obs_size-1), first_row, fn(t, prev_row) ->
+    {result, _} = Enum.map_reduce((1..obs_len-1), first_row, fn(t, prev_row) ->
       new_row = Enum.map(states_range, fn j ->
         sum = Stream.map(states_range, fn i ->
           elem(prev_row, i) * Model.A.get(a, {i, j})
