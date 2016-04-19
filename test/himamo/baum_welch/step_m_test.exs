@@ -32,18 +32,18 @@ defmodule Himamo.BaumWelch.StepMTest do
     m: 3,
   }
 
-  def observation do
+  def obs_seq do
     ObsSeq.new([0, 1, 1, 2, 1, 0, 1])
     |> ObsSeq.compute_prob(b)
   end
 
-  def alpha, do: BaumWelch.StepE.compute_alpha(model, observation)
-  def beta, do: BaumWelch.StepE.compute_beta(model, observation)
-  def xi, do: BaumWelch.StepE.compute_xi(model, observation, alpha: alpha, beta: beta)
-  def gamma, do: BaumWelch.StepE.compute_gamma(model, observation, xi: xi)
+  def alpha, do: BaumWelch.StepE.compute_alpha(model, obs_seq)
+  def beta, do: BaumWelch.StepE.compute_beta(model, obs_seq)
+  def xi, do: BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+  def gamma, do: BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
 
   test "reestimate_a" do
-    a = StepM.reestimate_a(2, observation.len, xi: xi, gamma: gamma)
+    a = StepM.reestimate_a(2, obs_seq, xi: xi, gamma: gamma)
 
     expected = [
       {{0, 0}, 0.709503110},
@@ -56,7 +56,7 @@ defmodule Himamo.BaumWelch.StepMTest do
   end
 
   test "reestimate_b" do
-    b = StepM.reestimate_b(model, observation.seq, gamma: gamma)
+    b = StepM.reestimate_b(model, obs_seq, gamma: gamma)
 
     expected = [
       {{0, 0}, 0.183004200},
