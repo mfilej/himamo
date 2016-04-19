@@ -1,6 +1,6 @@
 defmodule Himamo.BaumWelch.StepE do
   @moduledoc ~S"""
-  Defines the E-step of the Baum-Welch algorithm.
+  Defines the E-step of the Baum-Welch algorithm (Expectation).
 
   Calculates required statistics for the given model.
   """
