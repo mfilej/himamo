@@ -6,15 +6,22 @@ defmodule Himamo.BaumWelch.StepM do
   """
 
   alias Himamo.{Matrix, Model, ObsSeq}
+  alias Himamo.BaumWelch.StepE
+
+  @doc ~S"""
+  Returns a new model with re-estimated parameters `A`, `B`, and `π`.
+  """
+  @spec reestimate(Model.t, ObsSeq.t, StepE.t) :: Model.t
+  def reestimate(model, obs_seq, step_e) do
+    %{model |
+      a: reestimate_a(model, obs_seq, step_e),
+      b: reestimate_b(model, obs_seq, step_e),
+      pi: reestimate_pi(model, step_e),
+    }
+  end
 
   @doc ~S"""
   Re-estimates the `A` variable.
-
-  Requires the following arguments:
-    * `num_states` - number of states of the model being re-estimated (`N`).
-    * `obs_len` - observation sequence length (`T`).
-    * `xi` - the computed variable `ξ` (see `compute_xi/2`).
-    * `gamma` - the computed variable `γ` (see `compute_gamma/2`).
 
   Each entry in `A=[a_{i,j}]` is recomputed as: expected number of transitions
   from state `S_i` to state `S_j` divided by the expected number of
@@ -43,11 +50,6 @@ defmodule Himamo.BaumWelch.StepM do
 
   @doc ~S"""
   Re-estimates the `B` variable.
-
-  Requires the following arguments:
-  * `model` - the HMM.
-  * `observations` - the observation sequence.
-  * `gamma` - the computed variable `γ` (see `compute_gamma/2`).
   """
   @spec reestimate_b(Model.t, ObsSeq.t, StepE.t) :: Matrix.t
   def reestimate_b(%Model{n: num_states, m: num_symbols}, %ObsSeq{seq: observations}, %StepE{gamma: gamma}) do
@@ -75,10 +77,6 @@ defmodule Himamo.BaumWelch.StepM do
 
   @doc ~S"""
   Re-estimates the `π` variable.
-
-  Requires the following arguments:
-  * `model` - the HMM.
-  * `gamma` - the computed variable `γ` (see `compute_gamma/2`).
   """
   @spec reestimate_pi(Model.t, StepE.t) :: Model.Pi.t
   def reestimate_pi(%Model{n: num_states}, %StepE{gamma: gamma}) do
