@@ -37,14 +37,23 @@ defmodule Himamo.BaumWelch.StepMTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  def alpha, do: BaumWelch.StepE.compute_alpha(model, obs_seq)
-  def beta, do: BaumWelch.StepE.compute_beta(model, obs_seq)
-  def xi, do: BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-  def gamma, do: BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
+  def step_e, do: BaumWelch.StepE.compute(model, obs_seq)
 
+  def reestimated_a, do: StepM.reestimate_a(model, obs_seq, step_e)
+  def reestimated_b, do: StepM.reestimate_b(model, obs_seq, step_e)
+  def reestimated_pi, do: StepM.reestimate_pi(model, step_e)
+
+  test "reestimate" do
+    %Model{
+      a: new_a, b: new_b, pi: new_pi
+    } = StepM.reestimate(model, obs_seq, step_e)
+
+    assert reestimated_a == new_a
+    assert reestimated_b == new_b
+    assert reestimated_pi == new_pi
+  end
 
   test "reestimate_a" do
-    a = StepM.reestimate_a(model, obs_seq, xi: xi, gamma: gamma)
     expected = [
       {{0, 0}, 0.709503110},
       {{0, 1}, 0.290496890},
@@ -52,12 +61,10 @@ defmodule Himamo.BaumWelch.StepMTest do
       {{1, 1}, 0.051929667},
     ] |> Enum.into(Map.new)
 
-    assert_all_in_delta(a, expected, 5.0e-9)
+    assert_all_in_delta(reestimated_a, expected, 5.0e-9)
   end
 
   test "reestimate_b" do
-    b = StepM.reestimate_b(model, obs_seq, gamma: gamma)
-
     expected = [
       {{0, 0}, 0.183004200},
       {{0, 1}, 0.615067920},
@@ -67,11 +74,11 @@ defmodule Himamo.BaumWelch.StepMTest do
       {{1, 2}, 0.084982295},
     ] |> Enum.into(Map.new)
 
-    assert_all_in_delta(b, expected, 5.0e-9)
+    assert_all_in_delta(reestimated_b, expected, 5.0e-9)
   end
 
   test "reestimate_pi" do
-    pi = StepM.reestimate_pi(model, gamma: gamma)
+    pi = reestimated_pi
     assert_in_delta(Model.Pi.get(pi, 0), 0.41516738, 5.0e-9)
     assert_in_delta(Model.Pi.get(pi, 1), 0.58483262, 5.0e-9)
   end

@@ -22,8 +22,8 @@ defmodule Himamo.BaumWelch.StepM do
 
   This is part of the _M_ step of Baum-Welch.
   """
-  def reestimate_a(%Model{n: num_states}, %ObsSeq{len: obs_len}, xi: xi, gamma: gamma) do
-  @spec reestimate_a(Model.t, ObsSeq.t, [xi: Matrix.t, gamma: Matrix.t]) :: Matrix.t
+  @spec reestimate_a(Model.t, ObsSeq.t, StepE.t) :: Matrix.t
+  def reestimate_a(%Model{n: num_states}, %ObsSeq{len: obs_len}, %StepE{xi: xi, gamma: gamma}) do
     states_range = 0..num_states-1
 
     Enum.flat_map(states_range, fn(i) ->
@@ -49,8 +49,8 @@ defmodule Himamo.BaumWelch.StepM do
   * `observations` - the observation sequence.
   * `gamma` - the computed variable `γ` (see `compute_gamma/2`).
   """
-  @spec reestimate_b(Model.t, ObsSeq.t, [gamma: Matrix.t]) :: Matrix.t
-  def reestimate_b(%Model{n: num_states, m: num_symbols}, %ObsSeq{seq: observations}, gamma: gamma) do
+  @spec reestimate_b(Model.t, ObsSeq.t, StepE.t) :: Matrix.t
+  def reestimate_b(%Model{n: num_states, m: num_symbols}, %ObsSeq{seq: observations}, %StepE{gamma: gamma}) do
     states_range = 0..num_states-1
     symbols_range = 0..num_symbols-1
 
@@ -80,8 +80,8 @@ defmodule Himamo.BaumWelch.StepM do
   * `model` - the HMM.
   * `gamma` - the computed variable `γ` (see `compute_gamma/2`).
   """
-  @spec reestimate_pi(Model.t, [gamma: Matrix.t]) :: Model.Pi.t
-  def reestimate_pi(%Model{n: num_states}, gamma: gamma) do
+  @spec reestimate_pi(Model.t, StepE.t) :: Model.Pi.t
+  def reestimate_pi(%Model{n: num_states}, %StepE{gamma: gamma}) do
     for i <- 0..num_states-1 do
       Matrix.get(gamma, {0, i})
     end
