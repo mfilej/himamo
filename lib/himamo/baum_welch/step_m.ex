@@ -1,5 +1,5 @@
 defmodule Himamo.BaumWelch.StepM do
-  @defmodule ~S"""
+  @moduledoc ~S"""
   Defines the M-step of the Baum-Welch algorithm (Maximization).
 
   Maximizes the model's parameters.
