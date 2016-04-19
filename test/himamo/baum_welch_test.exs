@@ -49,8 +49,8 @@ defmodule Himamo.BaumWelchTest do
       {{1, 2}, 0.084982295},
     ] |> Enum.into(Map.new)
 
-    assert_all_in_delta(new_model.b, expected_b, 5.0e-9)
-    assert_all_in_delta(new_model.a, expected_a, 5.0e-9)
+    assert_all_in_delta(new_model.b, expected_b)
+    assert_all_in_delta(new_model.a, expected_a)
     assert_in_delta(Model.Pi.get(new_model.pi, 0), 0.41516738, 5.0e-9)
     assert_in_delta(Model.Pi.get(new_model.pi, 1), 0.58483262, 5.0e-9)
   end

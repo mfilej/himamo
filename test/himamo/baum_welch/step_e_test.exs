@@ -115,7 +115,7 @@ defmodule Himamo.BaumWelch.StepETest do
       {{5, 1, 1}, 0.0231505960},
     ] |> Enum.into(Map.new)
 
-    assert_all_in_delta(xi, expected, 5.0e-9)
+    assert_all_in_delta(xi, expected)
   end
 
   test "compute_gamma" do
@@ -134,6 +134,6 @@ defmodule Himamo.BaumWelch.StepETest do
       {{5, 1}, 0.64821669},
     ] |> Enum.into(Map.new)
 
-     assert_all_in_delta(gamma, expected, 5.0e-9)
+     assert_all_in_delta(gamma, expected)
   end
 end
