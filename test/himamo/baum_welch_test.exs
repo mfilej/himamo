@@ -42,7 +42,7 @@ defmodule Himamo.BaumWelchTest do
   def gamma, do: BaumWelch.StepE.compute_gamma(model, observation, xi: xi)
 
   test "reestimate_a" do
-    a = BaumWelch.reestimate_a(2, observation.seq_len, xi: xi, gamma: gamma)
+    a = BaumWelch.reestimate_a(2, observation.len, xi: xi, gamma: gamma)
 
     expected = [
       {{0, 0}, 0.709503110},
