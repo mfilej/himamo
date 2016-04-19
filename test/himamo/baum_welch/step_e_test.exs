@@ -34,6 +34,16 @@ defmodule Himamo.BaumWelch.StepETest do
   def alpha, do: StepE.compute_alpha(model, observation)
   def beta, do: StepE.compute_beta(model, observation)
   def xi, do: StepE.compute_xi(model, observation, alpha: alpha, beta: beta)
+  def gamma, do: StepE.compute_gamma(model, observation, xi: xi)
+
+  test "compute" do
+    assert StepE.compute(model, observation) == %StepE{
+      alpha: alpha,
+      beta: beta,
+      gamma: gamma,
+      xi: xi,
+    }
+  end
 
   test "compute_alpha" do
     expected = [
@@ -78,8 +88,6 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_xi" do
-    xi = StepE.compute_xi(model, observation, alpha: alpha, beta: beta)
-
     expected = [
       {{0, 0, 0}, 0.3263493600},
       {{0, 0, 1}, 0.0888180140},
@@ -111,8 +119,6 @@ defmodule Himamo.BaumWelch.StepETest do
   end
 
   test "compute_gamma" do
-   gamma = StepE.compute_gamma(model, observation, xi: xi)
-
     expected = [
       {{0, 0}, 0.41516738},
       {{0, 1}, 0.58483262},

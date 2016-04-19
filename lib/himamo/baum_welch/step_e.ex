@@ -5,7 +5,37 @@ defmodule Himamo.BaumWelch.StepE do
   Calculates required statistics for the given model.
   """
 
+  defstruct [:alpha, :beta, :gamma, :xi]
   alias Himamo.{Matrix, Model, ObsSeq}
+
+  @type t :: %__MODULE__{
+    alpha: Matrix.t,
+    beta: Matrix.t,
+    gamma: Matrix.t,
+    xi: Matrix.t,
+  }
+
+  @doc ~S"""
+  Computes variables for Baum-Welch E-step:
+
+    * `α` - `compute_alpha/2`
+    * `ß` - `compute_beta/2`
+    * `γ` - `compute_gamma/3`
+    * `ξ` - `compute_xi/3`
+  """
+  @spec compute(Model.t, ObsSeq.t) :: t
+  def compute(model, obs_seq) do
+    alpha = compute_alpha(model, obs_seq)
+    beta = compute_beta(model, obs_seq)
+    xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+    gamma = compute_gamma(model, obs_seq, xi: xi)
+    %__MODULE__{
+      alpha: alpha,
+      beta: beta,
+      xi: xi,
+      gamma: gamma,
+    }
+  end
 
   @doc ~S"""
   Computes alpha variable for Baum-Welch.
