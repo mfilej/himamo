@@ -72,4 +72,19 @@ defmodule Himamo.BaumWelch.StepM do
     end
     |> Enum.into(Matrix.new({num_states, num_symbols}))
   end
+
+  @doc ~S"""
+  Re-estimates the `π` variable.
+
+  Requires the following arguments:
+  * `model` - the HMM.
+  * `gamma` - the computed variable `γ` (see `compute_gamma/2`).
+  """
+  @spec reestimate_pi(Model.t, [gamma: Matrix.t]) :: Model.Pi.t
+  def reestimate_pi(%Model{n: num_states}, gamma: gamma) do
+    for i <- 0..num_states-1 do
+      Matrix.get(gamma, {0, i})
+    end
+    |> Model.Pi.new
+  end
 end

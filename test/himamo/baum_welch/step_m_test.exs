@@ -69,4 +69,10 @@ defmodule Himamo.BaumWelch.StepMTest do
 
     assert_all_in_delta(b, expected, 5.0e-9)
   end
+
+  test "reestimate_pi" do
+    pi = StepM.reestimate_pi(model, gamma: gamma)
+    assert_in_delta(Model.Pi.get(pi, 0), 0.41516738, 5.0e-9)
+    assert_in_delta(Model.Pi.get(pi, 1), 0.58483262, 5.0e-9)
+  end
 end
