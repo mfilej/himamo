@@ -170,8 +170,8 @@ defmodule Himamo.BaumWelch.StepE do
   * `N` - number of states in the model
   """
   @spec compute_gamma(Model.t, ObsSeq.t, [xi: Matrix.t]) :: Matrix.t
-  def compute_gamma(%Model{n: num_states}, observation, xi: xi) do
-    seq_len = observation.seq_len
+  def compute_gamma(%Model{n: num_states}, obs_seq, xi: xi) do
+    seq_len = obs_seq.seq_len
 
     Enum.flat_map(0..seq_len-2, fn(t) ->
       Enum.map(0..num_states-1, fn(i) ->
