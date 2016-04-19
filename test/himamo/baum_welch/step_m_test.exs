@@ -42,9 +42,9 @@ defmodule Himamo.BaumWelch.StepMTest do
   def xi, do: BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
   def gamma, do: BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
 
-  test "reestimate_a" do
-    a = StepM.reestimate_a(2, obs_seq, xi: xi, gamma: gamma)
 
+  test "reestimate_a" do
+    a = StepM.reestimate_a(model, obs_seq, xi: xi, gamma: gamma)
     expected = [
       {{0, 0}, 0.709503110},
       {{0, 1}, 0.290496890},

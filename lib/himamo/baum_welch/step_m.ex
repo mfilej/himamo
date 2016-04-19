@@ -22,8 +22,8 @@ defmodule Himamo.BaumWelch.StepM do
 
   This is part of the _M_ step of Baum-Welch.
   """
-  @spec reestimate_a(non_neg_integer, ObsSeq.t, [xi: Matrix.t, gamma: Matrix.t]) :: Matrix.t
-  def reestimate_a(num_states, %ObsSeq{len: obs_len}, xi: xi, gamma: gamma) do
+  def reestimate_a(%Model{n: num_states}, %ObsSeq{len: obs_len}, xi: xi, gamma: gamma) do
+  @spec reestimate_a(Model.t, ObsSeq.t, [xi: Matrix.t, gamma: Matrix.t]) :: Matrix.t
     states_range = 0..num_states-1
 
     Enum.flat_map(states_range, fn(i) ->
