@@ -35,17 +35,20 @@ defmodule Himamo.BaumWelch.StepM do
 
     for i <- states_range, j <- states_range do
       {numerator, denominator} =
-        Enum.reduce(0..obs_len-2, {0, 0}, fn (t, {numer, denom}) ->
-          new_numer =
+        Stream.map(0..obs_len-2, fn (t) ->
+          numer =
             Matrix.get(alpha, {t, i}) *
             Model.A.get(a, {i, j}) *
             Model.ObsProb.get(obs_prob, {j, t+1}) *
             Matrix.get(beta, {t+1, j})
 
-          new_denom =
+          denom =
             Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
 
-          {(numer + new_numer), (denom + new_denom)}
+          {numer, denom}
+        end)
+        |> Enum.reduce({0, 0}, fn ({numer, denom}, {numer_sum, denom_sum}) ->
+          {numer_sum + numer, denom_sum + denom}
         end)
 
       {{i, j}, numerator/denominator}
