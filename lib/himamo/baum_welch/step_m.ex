@@ -30,21 +30,26 @@ defmodule Himamo.BaumWelch.StepM do
   This is part of the _M_ step of Baum-Welch.
   """
   @spec reestimate_a(Model.t, ObsSeq.t, StepE.t) :: Matrix.t
-  def reestimate_a(%Model{n: num_states}, %ObsSeq{len: obs_len}, %StepE{xi: xi, gamma: gamma}) do
+  def reestimate_a(%Model{a: a, n: num_states}, %ObsSeq{len: obs_len, prob: obs_prob}, %StepE{alpha: alpha, beta: beta}) do
     states_range = 0..num_states-1
 
-    Enum.flat_map(states_range, fn(i) ->
-      Enum.map(states_range, fn(j) ->
-        {numerator, denominator} =
-          Enum.reduce(0..obs_len-2, {0, 0}, fn (t, {numer, denom}) ->
-            new_numer = numer + Matrix.get(xi, {t, i, j})
-            new_denom = denom + Matrix.get(gamma, {t, i})
-            {new_numer, new_denom}
-          end)
+    for i <- states_range, j <- states_range do
+      {numerator, denominator} =
+        Enum.reduce(0..obs_len-2, {0, 0}, fn (t, {numer, denom}) ->
+          new_numer =
+            Matrix.get(alpha, {t, i}) *
+            Model.A.get(a, {i, j}) *
+            Model.ObsProb.get(obs_prob, {j, t+1}) *
+            Matrix.get(beta, {t+1, j})
 
-        {{i, j}, numerator/denominator}
-      end)
-    end)
+          new_denom =
+            Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
+
+          {(numer + new_numer), (denom + new_denom)}
+        end)
+
+      {{i, j}, numerator/denominator}
+    end
     |> Enum.into(Matrix.new({num_states, num_states}))
   end
 

@@ -30,6 +30,7 @@ defmodule Himamo.TrainingTest do
   end
 
 
+  @tag :skip
   test "perform" do
     Himamo.Training.perform(model, obs_seq, 1.0e-6)
   end
