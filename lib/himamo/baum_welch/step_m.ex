@@ -14,7 +14,7 @@ defmodule Himamo.BaumWelch.StepM do
   @spec reestimate(Model.t, ObsSeq.t, StepE.t) :: Model.t
   def reestimate(model, obs_seq, step_e) do
     %{model |
-      a: reestimate_a(model, obs_seq, step_e),
+      a: reestimate_a(model, [obs_seq], step_e),
       b: reestimate_b(model, obs_seq, step_e),
       pi: reestimate_pi(model, step_e),
     }
@@ -29,8 +29,8 @@ defmodule Himamo.BaumWelch.StepM do
 
   This is part of the _M_ step of Baum-Welch.
   """
-  @spec reestimate_a(Model.t, ObsSeq.t, StepE.t) :: Matrix.t
-  def reestimate_a(%Model{a: a, n: num_states}, %ObsSeq{len: obs_len, prob: obs_prob}, %StepE{alpha: alpha, beta: beta}) do
+  @spec reestimate_a(Model.t, list(ObsSeq.t), StepE.t) :: Matrix.t
+  def reestimate_a(%Model{a: a, n: num_states}, [%ObsSeq{len: obs_len, prob: obs_prob}], %StepE{alpha: alpha, beta: beta}) do
     states_range = 0..num_states-1
 
     for i <- states_range, j <- states_range do

@@ -39,7 +39,7 @@ defmodule Himamo.BaumWelch.StepMTest do
 
   def step_e, do: BaumWelch.StepE.compute(model, obs_seq)
 
-  def reestimated_a, do: StepM.reestimate_a(model, obs_seq, step_e)
+  def reestimated_a, do: StepM.reestimate_a(model, [obs_seq], step_e)
   def reestimated_b, do: StepM.reestimate_b(model, obs_seq, step_e)
   def reestimated_pi, do: StepM.reestimate_pi(model, step_e)
 
