@@ -1,5 +1,4 @@
 defmodule Himamo.BaumWelch do
-  alias Himamo.BaumWelch.{StepE, StepM}
   @moduledoc ~S"""
   Defines the Baum-Welch algorithm.
 
@@ -23,12 +22,28 @@ defmodule Himamo.BaumWelch do
     }
   end
 
+  alias Himamo.BaumWelch.{StepE, StepM}
+
   @doc ~S"""
-  Returns a new model, maximized according to the given observation sequence.
+  Computes variables for Baum-Welch E-step:
+
+    * `α` - `compute_alpha/2`
+    * `ß` - `compute_beta/2`
+    * `γ` - `compute_gamma/3`
+    * `ξ` - `compute_xi/3`
   """
-  @spec perform(Himamo.Model.t, Himamo.ObsSeq.t) :: Himamo.Model.t
-  def perform(model, obs_seq) do
-    stats = StepE.compute(model, obs_seq)
-    StepM.reestimate(model, obs_seq, stats)
+  @spec compute(Himamo.Model.t, Himamo.ObsSeq.t) :: Stats.t
+  def compute(model, obs_seq) do
+    import StepE
+    alpha = compute_alpha(model, obs_seq)
+    beta = compute_beta(model, obs_seq)
+    xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+    gamma = compute_gamma(model, obs_seq, xi: xi)
+    %Stats{
+      alpha: alpha,
+      beta: beta,
+      xi: xi,
+      gamma: gamma,
+    }
   end
 end

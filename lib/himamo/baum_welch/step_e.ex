@@ -1,33 +1,11 @@
 defmodule Himamo.BaumWelch.StepE do
   @moduledoc ~S"""
-  Defines the E-step of the Baum-Welch algorithm (Expectation).
+  Defines components of the E-step of the Baum-Welch algorithm (Expectation).
 
   Calculates required statistics for the given model.
   """
 
   alias Himamo.{Matrix, Model, ObsSeq}
-
-  @doc ~S"""
-  Computes variables for Baum-Welch E-step:
-
-    * `α` - `compute_alpha/2`
-    * `ß` - `compute_beta/2`
-    * `γ` - `compute_gamma/3`
-    * `ξ` - `compute_xi/3`
-  """
-  @spec compute(Model.t, ObsSeq.t) :: Himamo.BaumWelch.Stats.t
-  def compute(model, obs_seq) do
-    alpha = compute_alpha(model, obs_seq)
-    beta = compute_beta(model, obs_seq)
-    xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-    gamma = compute_gamma(model, obs_seq, xi: xi)
-    %Himamo.BaumWelch.Stats{
-      alpha: alpha,
-      beta: beta,
-      xi: xi,
-      gamma: gamma,
-    }
-  end
 
   @doc ~S"""
   Computes alpha variable for Baum-Welch.

@@ -32,19 +32,10 @@ defmodule Himamo.BaumWelch.StepETest do
     |> ObsSeq.compute_prob(b)
   end
 
-  def alpha, do: StepE.compute_alpha(model, obs_seq)
-  def beta, do: StepE.compute_beta(model, obs_seq)
-  def xi, do: StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-  def gamma, do: StepE.compute_gamma(model, obs_seq, xi: xi)
-
-  test "compute" do
-    assert StepE.compute(model, obs_seq) == %BaumWelch.Stats{
-      alpha: alpha,
-      beta: beta,
-      gamma: gamma,
-      xi: xi,
-    }
-  end
+  def alpha, do: BaumWelch.StepE.compute_alpha(model, obs_seq)
+  def beta, do: BaumWelch.StepE.compute_beta(model, obs_seq)
+  def xi, do: BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+  def gamma, do: BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
 
   test "compute_alpha" do
     expected = [

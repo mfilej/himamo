@@ -37,7 +37,7 @@ defmodule Himamo.BaumWelch.StepMTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  def step_e, do: BaumWelch.StepE.compute(model, obs_seq)
+  def step_e, do: BaumWelch.compute(model, obs_seq)
 
   def reestimated_a, do: StepM.reestimate_a(model, [obs_seq], step_e)
   def reestimated_b, do: StepM.reestimate_b(model, obs_seq, step_e)
