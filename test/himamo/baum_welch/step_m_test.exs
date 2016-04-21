@@ -37,21 +37,11 @@ defmodule Himamo.BaumWelch.StepMTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  def step_e, do: BaumWelch.compute(model, obs_seq)
+  def stats, do: BaumWelch.compute(model, obs_seq)
 
-  def reestimated_a, do: StepM.reestimate_a(model, [obs_seq], step_e)
-  def reestimated_b, do: StepM.reestimate_b(model, obs_seq, step_e)
-  def reestimated_pi, do: StepM.reestimate_pi(model, step_e)
-
-  test "reestimate" do
-    %Model{
-      a: new_a, b: new_b, pi: new_pi
-    } = StepM.reestimate(model, obs_seq, step_e)
-
-    assert reestimated_a == new_a
-    assert reestimated_b == new_b
-    assert reestimated_pi == new_pi
-  end
+  def reestimated_a, do: StepM.reestimate_a(model, [obs_seq], stats)
+  def reestimated_b, do: StepM.reestimate_b(model, obs_seq, stats)
+  def reestimated_pi, do: StepM.reestimate_pi(model, stats)
 
   test "reestimate_a" do
     expected = [

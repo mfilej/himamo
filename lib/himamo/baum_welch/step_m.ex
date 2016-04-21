@@ -1,24 +1,12 @@
 defmodule Himamo.BaumWelch.StepM do
   @moduledoc ~S"""
-  Defines the M-step of the Baum-Welch algorithm (Maximization).
+  Defines components of the M-step of the Baum-Welch algorithm (Maximization).
 
   Maximizes the model's parameters.
   """
 
   alias Himamo.{Matrix, Model, ObsSeq}
   alias Himamo.BaumWelch.Stats
-
-  @doc ~S"""
-  Returns a new model with re-estimated parameters `A`, `B`, and `π`.
-  """
-  @spec reestimate(Model.t, ObsSeq.t, Stats.t) :: Model.t
-  def reestimate(model, obs_seq, step_e) do
-    %{model |
-      a: reestimate_a(model, [obs_seq], step_e),
-      b: reestimate_b(model, obs_seq, step_e),
-      pi: reestimate_pi(model, step_e),
-    }
-  end
 
   @doc ~S"""
   Re-estimates the `A` variable.

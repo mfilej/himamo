@@ -46,4 +46,18 @@ defmodule Himamo.BaumWelch do
       gamma: gamma,
     }
   end
+
+  @doc ~S"""
+  Returns a new HMM with re-estimated parameters `A`, `B`, and `π`.
+  """
+  @spec reestimate(Model.t, ObsSeq.t, Stats.t) :: Model.t
+  def reestimate(model, obs_seq, step_e) do
+    import StepM
+    %{model |
+      a: reestimate_a(model, [obs_seq], step_e),
+      b: reestimate_b(model, obs_seq, step_e),
+      pi: reestimate_pi(model, step_e),
+    }
+  end
+
 end

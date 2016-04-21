@@ -30,17 +30,33 @@ defmodule Himamo.BaumWelchTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  def alpha, do: BaumWelch.StepE.compute_alpha(model, obs_seq)
-  def beta, do: BaumWelch.StepE.compute_beta(model, obs_seq)
-  def xi, do: BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-  def gamma, do: BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
-
   test "compute" do
+    expected_alpha = alpha = BaumWelch.StepE.compute_alpha(model, obs_seq)
+    expected_beta = beta = BaumWelch.StepE.compute_beta(model, obs_seq)
+    expected_xi = xi = BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+    expected_gamma = BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
+
     assert BaumWelch.compute(model, obs_seq) == %BaumWelch.Stats{
-      alpha: alpha,
-      beta: beta,
-      gamma: gamma,
-      xi: xi,
+      alpha: expected_alpha,
+      beta: expected_beta,
+      gamma: expected_gamma,
+      xi: expected_xi,
     }
   end
+
+  test "reestimate" do
+    stats = BaumWelch.compute(model, obs_seq)
+    expected_a = BaumWelch.StepM.reestimate_a(model, [obs_seq], stats)
+    expected_b = BaumWelch.StepM.reestimate_b(model, obs_seq, stats)
+    expected_pi = BaumWelch.StepM.reestimate_pi(model, stats)
+
+    %Model{
+      a: a, b: b, pi: pi
+    } = BaumWelch.reestimate(model, obs_seq, stats)
+
+    assert a == expected_a
+    assert b == expected_b
+    assert pi == expected_pi
+  end
+
 end
