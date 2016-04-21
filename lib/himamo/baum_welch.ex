@@ -7,6 +7,22 @@ defmodule Himamo.BaumWelch do
   respective expectation and maximization steps.
   """
 
+  defmodule Stats do
+    @moduledoc ~S"""
+    Defines the statistical properties of an HMM.
+
+    See functions in `Himamo.BaumWelch.StepE` for their definitions.
+    """
+
+    defstruct [:alpha, :beta, :gamma, :xi]
+    @type t :: %__MODULE__{
+      alpha: Matrix.t,
+      beta: Matrix.t,
+      gamma: Matrix.t,
+      xi: Matrix.t,
+    }
+  end
+
   @doc ~S"""
   Returns a new model, maximized according to the given observation sequence.
   """

@@ -2,7 +2,8 @@ defmodule Himamo.BaumWelch.StepETest do
   use ExUnit.Case
   import TestHelpers.AllInDelta
   alias Himamo.{Model, ObsSeq}
-  alias Himamo.BaumWelch.StepE
+  alias Himamo.BaumWelch
+  alias BaumWelch.StepE
 
   def a do
     import Model.A, only: [new: 1, put: 3]
@@ -37,7 +38,7 @@ defmodule Himamo.BaumWelch.StepETest do
   def gamma, do: StepE.compute_gamma(model, obs_seq, xi: xi)
 
   test "compute" do
-    assert StepE.compute(model, obs_seq) == %StepE{
+    assert StepE.compute(model, obs_seq) == %BaumWelch.Stats{
       alpha: alpha,
       beta: beta,
       gamma: gamma,
