@@ -14,7 +14,7 @@ defmodule Himamo.Training do
   end
 
   def perform({model, stats, prob}, obs_seq, epsilon, iter_left, _) do
-    new_model = Himamo.BaumWelch.reestimate(model, obs_seq, stats)
+    new_model = Himamo.BaumWelch.reestimate_model(model, obs_seq, stats)
     {new_stats, new_prob} = compute_stats(new_model, obs_seq)
 
     delta = abs(prob - new_prob)

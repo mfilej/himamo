@@ -43,7 +43,7 @@ defmodule Himamo.BaumWelchTest do
     }
   end
 
-  test "reestimate" do
+  test "reestimate_model" do
     stats = BaumWelch.compute_stats(model, obs_seq)
     expected_a = BaumWelch.StepM.reestimate_a(model, [obs_seq], stats)
     expected_b = BaumWelch.StepM.reestimate_b(model, obs_seq, stats)
@@ -51,7 +51,7 @@ defmodule Himamo.BaumWelchTest do
 
     %Model{
       a: a, b: b, pi: pi
-    } = BaumWelch.reestimate(model, obs_seq, stats)
+    } = BaumWelch.reestimate_model(model, obs_seq, stats)
 
     assert a == expected_a
     assert b == expected_b

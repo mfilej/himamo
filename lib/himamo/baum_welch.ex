@@ -47,11 +47,15 @@ defmodule Himamo.BaumWelch do
     }
   end
 
+  def compute_stats_list(model, obs_seq_list) do
+    for obs_seq <- obs_seq_list, do: {obs_seq, compute_stats(model, obs_seq)}
+  end
+
   @doc ~S"""
   Returns a new HMM with re-estimated parameters `A`, `B`, and `π`.
   """
-  @spec reestimate(Model.t, ObsSeq.t, Stats.t) :: Model.t
-  def reestimate(model, obs_seq, step_e) do
+  @spec reestimate_model(Himamo.Model.t, Himamo.ObsSeq.t, Stats.t) :: Himamo.Model.t
+  def reestimate_model(model, obs_seq, step_e) do
     import StepM
     %{model |
       a: reestimate_a(model, [obs_seq], step_e),
