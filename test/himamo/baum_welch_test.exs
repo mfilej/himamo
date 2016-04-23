@@ -1,6 +1,5 @@
 defmodule Himamo.BaumWelchTest do
   use ExUnit.Case
-  import TestHelpers.AllInDelta
   alias Himamo.{BaumWelch, Model, ObsSeq}
 
   def a do
@@ -30,13 +29,13 @@ defmodule Himamo.BaumWelchTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  test "compute" do
+  test "compute_stats" do
     expected_alpha = alpha = BaumWelch.StepE.compute_alpha(model, obs_seq)
     expected_beta = beta = BaumWelch.StepE.compute_beta(model, obs_seq)
     expected_xi = xi = BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
     expected_gamma = BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
 
-    assert BaumWelch.compute(model, obs_seq) == %BaumWelch.Stats{
+    assert BaumWelch.compute_stats(model, obs_seq) == %BaumWelch.Stats{
       alpha: expected_alpha,
       beta: expected_beta,
       gamma: expected_gamma,
@@ -45,7 +44,7 @@ defmodule Himamo.BaumWelchTest do
   end
 
   test "reestimate" do
-    stats = BaumWelch.compute(model, obs_seq)
+    stats = BaumWelch.compute_stats(model, obs_seq)
     expected_a = BaumWelch.StepM.reestimate_a(model, [obs_seq], stats)
     expected_b = BaumWelch.StepM.reestimate_b(model, obs_seq, stats)
     expected_pi = BaumWelch.StepM.reestimate_pi(model, stats)

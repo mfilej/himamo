@@ -25,7 +25,7 @@ defmodule Himamo.Training do
   end
 
   defp compute_stats(model, obs_seq) do
-    new_stats = Himamo.BaumWelch.compute(model, obs_seq)
+    new_stats = Himamo.BaumWelch.compute_stats(model, obs_seq)
     new_prob = Himamo.ForwardBackward.compute(new_stats.alpha)
     {new_stats, new_prob}
   end

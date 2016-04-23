@@ -32,8 +32,8 @@ defmodule Himamo.BaumWelch do
     * `γ` - `compute_gamma/3`
     * `ξ` - `compute_xi/3`
   """
-  @spec compute(Himamo.Model.t, Himamo.ObsSeq.t) :: Stats.t
-  def compute(model, obs_seq) do
+  @spec compute_stats(Himamo.Model.t, Himamo.ObsSeq.t) :: Stats.t
+  def compute_stats(model, obs_seq) do
     import StepE
     alpha = compute_alpha(model, obs_seq)
     beta = compute_beta(model, obs_seq)

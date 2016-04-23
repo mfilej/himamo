@@ -3,7 +3,6 @@ defmodule Himamo.BaumWelch.StepETest do
   import TestHelpers.AllInDelta
   alias Himamo.{Model, ObsSeq}
   alias Himamo.BaumWelch
-  alias BaumWelch.StepE
 
   def a do
     import Model.A, only: [new: 1, put: 3]
