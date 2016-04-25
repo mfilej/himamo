@@ -46,6 +46,39 @@ defmodule Himamo.BaumWelch.StepM do
     |> Enum.into(Matrix.new({num_states, num_states}))
   end
 
+  @spec reestimate_a(Model.t, Himamo.BaumWelch.stats_list) :: Matrix.t
+  def reestimate_a(%Model{a: a, n: num_states}, stats_list) do
+    states_range = 0..num_states-1
+
+    for i <- states_range, j <- states_range do
+      {numerator, denominator} =
+        Stream.flat_map(stats_list, fn({
+            %ObsSeq{len: obs_len, prob: obs_prob},
+            %Stats{alpha: alpha, beta: beta}
+          }) ->
+
+          Enum.map(0..obs_len-2, fn (t) ->
+            numer =
+              Matrix.get(alpha, {t, i}) *
+              Model.A.get(a, {i, j}) *
+              Model.ObsProb.get(obs_prob, {j, t+1}) *
+              Matrix.get(beta, {t+1, j})
+            denom =
+              Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
+
+            {numer, denom}
+          end)
+
+        end)
+        |> Enum.reduce({0, 0}, fn ({numer, denom}, {numer_sum, denom_sum}) ->
+          {numer_sum + numer, denom_sum + denom}
+        end)
+
+      {{i, j}, numerator/denominator}
+    end
+    |> Enum.into(Matrix.new({num_states, num_states}))
+  end
+
   @doc ~S"""
   Re-estimates the `B` variable.
   """
