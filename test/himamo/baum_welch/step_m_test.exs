@@ -39,11 +39,8 @@ defmodule Himamo.BaumWelch.StepMTest do
 
   def stats, do: BaumWelch.compute_stats(model, obs_seq)
 
-  def reestimated_a, do: StepM.reestimate_a(model, [obs_seq], stats)
-  def reestimated_b, do: StepM.reestimate_b(model, obs_seq, stats)
-  def reestimated_pi, do: StepM.reestimate_pi(model, stats)
-
   test "reestimate_a" do
+    reestimated_a = StepM.reestimate_a(model, [obs_seq], stats)
     expected = [
       {{0, 0}, 0.709503110},
       {{0, 1}, 0.290496890},
@@ -55,6 +52,7 @@ defmodule Himamo.BaumWelch.StepMTest do
   end
 
   test "reestimate_b" do
+    reestimated_b = StepM.reestimate_b(model, obs_seq, stats)
     expected = [
       {{0, 0}, 0.183004200},
       {{0, 1}, 0.615067920},
@@ -68,8 +66,8 @@ defmodule Himamo.BaumWelch.StepMTest do
   end
 
   test "reestimate_pi" do
-    pi = reestimated_pi
-    assert_in_delta(Model.Pi.get(pi, 0), 0.41516738, 5.0e-9)
-    assert_in_delta(Model.Pi.get(pi, 1), 0.58483262, 5.0e-9)
+    reestimated_pi = StepM.reestimate_pi(model, stats)
+    assert_in_delta(Model.Pi.get(reestimated_pi, 0), 0.41516738, 5.0e-9)
+    assert_in_delta(Model.Pi.get(reestimated_pi, 1), 0.58483262, 5.0e-9)
   end
 end
