@@ -22,6 +22,8 @@ defmodule Himamo.BaumWelch do
     }
   end
 
+  @type stats_list(obs_seq, stats) :: [{obs_seq, stats}]
+
   alias Himamo.BaumWelch.{StepE, StepM}
 
   @doc ~S"""
@@ -47,6 +49,7 @@ defmodule Himamo.BaumWelch do
     }
   end
 
+  @spec compute_stats_list(Himamo.Model.t, list(Himamo.ObsSeq.t)) :: stats_list(Himamo.ObsSeq.t, Stats.t)
   def compute_stats_list(model, obs_seq_list) do
     for obs_seq <- obs_seq_list, do: {obs_seq, compute_stats(model, obs_seq)}
   end

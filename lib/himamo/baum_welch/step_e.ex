@@ -25,7 +25,9 @@ defmodule Himamo.BaumWelch.StepE do
     # initialization
     first_row =
       for j <- states_range do
-        {{0, j}, Model.Pi.get(pi, j) * Model.ObsProb.get(obs_prob, {j, 0})}
+        lhs = Model.Pi.get(pi, j)
+        rhs = Model.ObsProb.get(obs_prob, {j, 0})
+        {{0, j}, lhs * rhs}
       end
       |> Enum.into(Matrix.new({seq_len, num_states}))
 

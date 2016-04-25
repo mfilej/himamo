@@ -58,4 +58,20 @@ defmodule Himamo.BaumWelchTest do
     assert pi == expected_pi
   end
 
+  test "compute_stats_list" do
+    obs_seq_list = [obs_seq_1, obs_seq_2, obs_seq_3] = fn ->
+      import ObsSeq
+      [
+        compute_prob(new([0, 2, 1]), b),
+        compute_prob(new([1, 0, 1]), b),
+        compute_prob(new([2, 0, 0]), b),
+      ]
+    end.()
+
+    assert BaumWelch.compute_stats_list(model, obs_seq_list) == [
+      {obs_seq_1, BaumWelch.compute_stats(model, obs_seq_1)},
+      {obs_seq_2, BaumWelch.compute_stats(model, obs_seq_2)},
+      {obs_seq_3, BaumWelch.compute_stats(model, obs_seq_3)},
+    ]
+  end
 end
