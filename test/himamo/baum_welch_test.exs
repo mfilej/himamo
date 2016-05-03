@@ -67,11 +67,13 @@ defmodule Himamo.BaumWelchTest do
         compute_prob(new([2, 0, 0]), b),
       ]
     end.()
+    stats_1 = BaumWelch.compute_stats(model, obs_seq_1)
+    stats_2 = BaumWelch.compute_stats(model, obs_seq_2)
+    stats_3 = BaumWelch.compute_stats(model, obs_seq_3)
+    result = BaumWelch.compute_stats_list(model, obs_seq_list)
 
-    assert BaumWelch.compute_stats_list(model, obs_seq_list) == [
-      {obs_seq_1, BaumWelch.compute_stats(model, obs_seq_1)},
-      {obs_seq_2, BaumWelch.compute_stats(model, obs_seq_2)},
-      {obs_seq_3, BaumWelch.compute_stats(model, obs_seq_3)},
-    ]
+    assert Enum.at(result, 0) == {obs_seq_1, -3.4076179494650780, stats_1}
+    assert Enum.at(result, 1) == {obs_seq_2, -3.5204540025120930, stats_2}
+    assert Enum.at(result, 2) == {obs_seq_3, -2.7895314429700933, stats_3}
   end
 end

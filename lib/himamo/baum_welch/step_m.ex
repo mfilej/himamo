@@ -50,13 +50,14 @@ defmodule Himamo.BaumWelch.StepM do
   def reestimate_a(%Model{a: a, n: num_states}, stats_list) do
     states_range = 0..num_states-1
 
-    for i <- states_range, j <- states_range do
-      {numerator, denominator} =
-        Stream.flat_map(stats_list, fn({
-            %ObsSeq{len: obs_len, prob: obs_prob},
-            %Stats{alpha: alpha, beta: beta}
-          }) ->
+    Stream.flat_map(stats_list, fn({
+      %ObsSeq{len: obs_len, prob: obs_prob},
+      prob_k,
+      %Stats{alpha: alpha, beta: beta}
+    }) ->
 
+      for i <- states_range, j <- states_range do
+        {numerator, denominator} =
           Enum.map(0..obs_len-2, fn (t) ->
             numer =
               Matrix.get(alpha, {t, i}) *
@@ -68,14 +69,20 @@ defmodule Himamo.BaumWelch.StepM do
 
             {numer, denom}
           end)
+          |> Enum.reduce({0, 0}, fn ({numer, denom}, {numer_sum, denom_sum}) ->
+            {numer_sum + numer, denom_sum + denom}
+          end)
 
-        end)
-        |> Enum.reduce({0, 0}, fn ({numer, denom}, {numer_sum, denom_sum}) ->
-          {numer_sum + numer, denom_sum + denom}
-        end)
-
-      {{i, j}, numerator/denominator}
-    end
+        {{i, j}, {numerator, denominator}}
+      end
+    end)
+    |> Enum.reduce(Map.new, fn({{i, j} = key, {numer, denom}}, sums) ->
+      {curr_numer, curr_denom} = Map.get(sums, key, {0, 0})
+      Map.put(sums, key, {numer + curr_numer, denom + curr_denom})
+    end)
+    |> Stream.map(fn({key, {numerator, denominator}}) ->
+      {key, numerator/denominator}
+    end)
     |> Enum.into(Matrix.new({num_states, num_states}))
   end
 
