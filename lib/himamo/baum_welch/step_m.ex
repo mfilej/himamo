@@ -113,6 +113,44 @@ defmodule Himamo.BaumWelch.StepM do
     |> Enum.into(Matrix.new({num_states, num_symbols}))
   end
 
+  @spec reestimate_b(Model.t, Himamo.BaumWelch.stats_list) :: Matrix.t
+  def reestimate_b(%Model{n: num_states, m: num_symbols}, stats_list) do
+    states_range = 0..num_states-1
+    symbols_range = 0..num_symbols-1
+
+    Enum.flat_map(stats_list, fn({
+      %ObsSeq{seq: observations},
+      prob_k,
+      %Stats{alpha: alpha, beta: beta}
+    }) ->
+
+      observations = List.delete_at(observations, -1)
+
+      for j <- states_range, k <- symbols_range do
+        {numerator, denominator} =
+          Stream.with_index(observations)
+          |> Enum.reduce({0, 0}, fn({o, t}, {numer, denom}) ->
+            increment = Matrix.get(alpha, {t, j}) * Matrix.get(beta, {t, j})
+            denom = denom + increment
+
+            if o == k, do: numer = numer + increment
+
+            {numer, denom}
+          end)
+
+        {{j, k}, {numerator, denominator}}
+      end
+    end)
+    |> Enum.reduce(Map.new, fn({{_i, _j} = key, {numer, denom}}, sums) ->
+      {curr_numer, curr_denom} = Map.get(sums, key, {0, 0})
+      Map.put(sums, key, {numer + curr_numer, denom + curr_denom})
+    end)
+    |> Stream.map(fn({key, {numerator, denominator}}) ->
+      {key, numerator/denominator}
+    end)
+    |> Enum.into(Matrix.new({num_states, num_symbols}))
+  end
+
   @doc ~S"""
   Re-estimates the `π` variable.
   """
