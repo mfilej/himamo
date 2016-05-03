@@ -76,10 +76,10 @@ defmodule Himamo.BaumWelch.StepMTest do
     stats_list = BaumWelch.compute_stats_list(model, obs_seq_list)
     reestimated_a = StepM.reestimate_a(model, stats_list)
     expected = [
-      {{0, 0}, 0.55040393396557790},
-      {{0, 1}, 0.44959606603442230},
-      {{1, 0}, 0.91271932451044960},
-      {{1, 1}, 0.08728067548955028},
+      {{0, 0}, 0.55489279742555900},
+      {{0, 1}, 0.44510720257444103},
+      {{1, 0}, 0.90894653036621130},
+      {{1, 1}, 0.09105346963378873},
     ] |> Enum.into(Map.new)
 
     assert_all_in_delta(reestimated_a, expected)

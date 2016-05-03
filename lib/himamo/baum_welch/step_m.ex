@@ -73,7 +73,7 @@ defmodule Himamo.BaumWelch.StepM do
             {numer_sum + numer, denom_sum + denom}
           end)
 
-        {{i, j}, {numerator, denominator}}
+        {{i, j}, {numerator * prob_k, denominator * prob_k}}
       end
     end)
     |> Enum.reduce(Map.new, fn({{i, j} = key, {numer, denom}}, sums) ->
