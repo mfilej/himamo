@@ -114,7 +114,6 @@ defmodule Himamo.BaumWelch.StepMTest do
     assert_all_in_delta(reestimated_b, expected)
   end
 
-  @tag :skip
   test "reestimate_b/2 with multiple observations" do
     obs_seq_list = [
       [0, 0, 1],
@@ -127,12 +126,12 @@ defmodule Himamo.BaumWelch.StepMTest do
     stats_list = BaumWelch.compute_stats_list(model, obs_seq_list)
     reestimated_b = StepM.reestimate_b(model, stats_list)
     expected = [
-      {{0, 0}, 0.183004200},
-      {{0, 1}, 0.615067920},
-      {{0, 2}, 0.201927880},
-      {{1, 0}, 0.681578330},
-      {{1, 1}, 0.233439370},
-      {{1, 2}, 0.084982295},
+      {{0, 0}, 0.37373281301098120},
+      {{0, 1}, 0.15770514678841493},
+      {{0, 2}, 0.46856204020060390},
+      {{1, 0}, 0.86523214464375410},
+      {{1, 1}, 0.06462876522537206},
+      {{1, 2}, 0.07013909013087392},
     ] |> Enum.into(Map.new)
 
     assert_all_in_delta(reestimated_b, expected)
