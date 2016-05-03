@@ -161,4 +161,11 @@ defmodule Himamo.BaumWelch.StepM do
     end
     |> Model.Pi.new
   end
+  @spec reestimate_pi(Model.t, Himamo.BaumWelch.stats_list) :: Model.Pi.t
+  def reestimate_pi(%Model{n: num_states}, [{_, _, %Stats{gamma: gamma}} |_]) do
+    for i <- 0..num_states-1 do
+      Matrix.get(gamma, {0, i})
+    end
+    |> Model.Pi.new
+  end
 end

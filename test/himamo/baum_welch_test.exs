@@ -44,14 +44,14 @@ defmodule Himamo.BaumWelchTest do
   end
 
   test "reestimate_model" do
-    stats = BaumWelch.compute_stats(model, obs_seq)
-    expected_a = BaumWelch.StepM.reestimate_a(model, [obs_seq], stats)
-    expected_b = BaumWelch.StepM.reestimate_b(model, obs_seq, stats)
-    expected_pi = BaumWelch.StepM.reestimate_pi(model, stats)
+    stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
+    expected_a = BaumWelch.StepM.reestimate_a(model, stats_list)
+    expected_b = BaumWelch.StepM.reestimate_b(model, stats_list)
+    expected_pi = BaumWelch.StepM.reestimate_pi(model, stats_list)
 
     %Model{
       a: a, b: b, pi: pi
-    } = BaumWelch.reestimate_model(model, obs_seq, stats)
+    } = BaumWelch.reestimate_model(model, stats_list)
 
     assert a == expected_a
     assert b == expected_b
