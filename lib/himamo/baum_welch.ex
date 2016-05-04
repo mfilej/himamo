@@ -13,7 +13,7 @@ defmodule Himamo.BaumWelch do
     See functions in `Himamo.BaumWelch.StepE` for their definitions.
     """
 
-    defstruct [:alpha, :beta, :gamma, :xi]
+    defstruct [:alpha, :beta, :gamma, :xi, :alpha_times_beta]
     @type t :: %__MODULE__{
       alpha: Matrix.t,
       beta: Matrix.t,
@@ -41,11 +41,13 @@ defmodule Himamo.BaumWelch do
     beta = compute_beta(model, obs_seq)
     xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
     gamma = compute_gamma(model, obs_seq, xi: xi)
+    alpha_times_beta = compute_alpha_times_beta(alpha, beta)
     %Stats{
       alpha: alpha,
       beta: beta,
       xi: xi,
       gamma: gamma,
+      alpha_times_beta: alpha_times_beta,
     }
   end
 

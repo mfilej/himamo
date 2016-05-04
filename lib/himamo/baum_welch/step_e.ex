@@ -157,4 +157,25 @@ defmodule Himamo.BaumWelch.StepE do
     end)
     |> Enum.into(Matrix.new({seq_len-1, num_states}))
   end
+
+  @doc ~S"""
+  Computes a Matrix where each element is `alpha_{t, i} * beta_{t, i}`.
+
+  This is not matrix multiplication. The result of the above expression is
+  used in multiple places, so the values are computed up front.
+  """
+  @spec compute_alpha_times_beta(Matrix.t, Matrix.t) :: Matrix.t
+  def compute_alpha_times_beta(%Matrix{size: size} = alpha, %Matrix{size: size} = beta) do
+    {seq_len, num_states} = size
+    states_range = 0..num_states-1
+    obs_range = 0..seq_len-1
+
+    for t <- obs_range, i <- states_range do
+      key = {t, i}
+      value = Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
+
+      {key, value}
+    end
+    |> Enum.into(Matrix.new({seq_len, num_states}))
+  end
 end

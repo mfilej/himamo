@@ -24,7 +24,7 @@ defmodule Himamo.BaumWelch.StepM do
     Stream.flat_map(stats_list, fn({
       %ObsSeq{len: obs_len, prob: obs_prob},
       prob_k,
-      %Stats{alpha: alpha, beta: beta}
+      %Stats{alpha: alpha, beta: beta, alpha_times_beta: albe}
     }) ->
 
       for i <- states_range, j <- states_range do
@@ -36,7 +36,7 @@ defmodule Himamo.BaumWelch.StepM do
               Model.ObsProb.get(obs_prob, {j, t+1}) *
               Matrix.get(beta, {t+1, j})
             denom =
-              Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
+              Matrix.get(albe, {t, i})
 
             {numer, denom}
           end)
@@ -63,7 +63,7 @@ defmodule Himamo.BaumWelch.StepM do
     Enum.flat_map(stats_list, fn({
       %ObsSeq{seq: observations},
       prob_k,
-      %Stats{alpha: alpha, beta: beta}
+      %Stats{alpha_times_beta: albe}
     }) ->
 
       observations = List.delete_at(observations, -1)
@@ -72,7 +72,7 @@ defmodule Himamo.BaumWelch.StepM do
         {numerator, denominator} =
           Stream.with_index(observations)
           |> Enum.reduce({0, 0}, fn({o, t}, {numer, denom}) ->
-            increment = Matrix.get(alpha, {t, j}) * Matrix.get(beta, {t, j})
+            increment = Matrix.get(albe, {t, j})
             denom = denom + increment
 
             if o == k, do: numer = numer + increment
