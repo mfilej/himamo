@@ -138,7 +138,8 @@ defmodule Himamo.BaumWelch.StepMTest do
   end
 
   test "reestimate_pi" do
-    reestimated_pi = StepM.reestimate_pi(model, stats)
+    stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
+    reestimated_pi = StepM.reestimate_pi(model, stats_list)
     assert_in_delta(Model.Pi.get(reestimated_pi, 0), 0.41516738, 5.0e-9)
     assert_in_delta(Model.Pi.get(reestimated_pi, 1), 0.58483262, 5.0e-9)
   end
