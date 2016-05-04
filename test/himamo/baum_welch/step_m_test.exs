@@ -39,18 +39,6 @@ defmodule Himamo.BaumWelch.StepMTest do
 
   def stats, do: BaumWelch.compute_stats(model, obs_seq)
 
-  test "reestimate_a/3" do
-    reestimated_a = StepM.reestimate_a(model, [obs_seq], stats)
-    expected = [
-      {{0, 0}, 0.709503110},
-      {{0, 1}, 0.290496890},
-      {{1, 0}, 0.948070330},
-      {{1, 1}, 0.051929667},
-    ] |> Enum.into(Map.new)
-
-    assert_all_in_delta(reestimated_a, expected)
-  end
-
   test "reestimate_a/2" do
     stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
     reestimated_a = StepM.reestimate_a(model, stats_list)
@@ -83,20 +71,6 @@ defmodule Himamo.BaumWelch.StepMTest do
     ] |> Enum.into(Map.new)
 
     assert_all_in_delta(reestimated_a, expected)
-  end
-
-  test "reestimate_b/3" do
-    reestimated_b = StepM.reestimate_b(model, obs_seq, stats)
-    expected = [
-      {{0, 0}, 0.183004200},
-      {{0, 1}, 0.615067920},
-      {{0, 2}, 0.201927880},
-      {{1, 0}, 0.681578330},
-      {{1, 1}, 0.233439370},
-      {{1, 2}, 0.084982295},
-    ] |> Enum.into(Map.new)
-
-    assert_all_in_delta(reestimated_b, expected)
   end
 
   test "reestimate_b/2" do
