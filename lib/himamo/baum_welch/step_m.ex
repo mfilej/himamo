@@ -47,14 +47,9 @@ defmodule Himamo.BaumWelch.StepM do
         {{i, j}, {numerator * prob_k, denominator * prob_k}}
       end
     end)
-    |> Enum.reduce(Map.new, fn({{_i, _j} = key, {numer, denom}}, sums) ->
-      {curr_numer, curr_denom} = Map.get(sums, key, {0, 0})
-      Map.put(sums, key, {numer + curr_numer, denom + curr_denom})
-    end)
-    |> Stream.map(fn({key, {numerator, denominator}}) ->
-      {key, numerator/denominator}
-    end)
-    |> Enum.into(Matrix.new({num_states, num_states}))
+    |> sum_fraction_parts
+    |> fractions_to_numbers
+    |> into_matrix({num_states, num_states})
   end
 
   @doc ~S"""
@@ -88,14 +83,26 @@ defmodule Himamo.BaumWelch.StepM do
         {{j, k}, {numerator * prob_k, denominator * prob_k}}
       end
     end)
-    |> Enum.reduce(Map.new, fn({{_i, _j} = key, {numer, denom}}, sums) ->
+    |> sum_fraction_parts
+    |> fractions_to_numbers
+    |> into_matrix({num_states, num_symbols})
+  end
+
+  defp sum_fraction_parts(fractions) do
+    Enum.reduce(fractions, Map.new, fn({{_i, _j} = key, {numer, denom}}, sums) ->
       {curr_numer, curr_denom} = Map.get(sums, key, {0, 0})
       Map.put(sums, key, {numer + curr_numer, denom + curr_denom})
     end)
-    |> Stream.map(fn({key, {numerator, denominator}}) ->
+  end
+
+  defp fractions_to_numbers(fractions) do
+    Stream.map(fractions, fn({key, {numerator, denominator}}) ->
       {key, numerator/denominator}
     end)
-    |> Enum.into(Matrix.new({num_states, num_symbols}))
+  end
+
+  defp into_matrix(enumerable, size) do
+    Enum.into(enumerable, Matrix.new(size))
   end
 
   @doc ~S"""
