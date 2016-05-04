@@ -92,35 +92,39 @@ defmodule Himamo.BaumWelch.StepE do
   """
   @spec compute_xi(Model.t, ObsSeq.t, [alpha: Matrix.t, beta: Matrix.t]) :: Matrix.t
   def compute_xi(
-    %Model{a: a, n: num_states},
+    %Model{n: num_states} = model,
     %ObsSeq{len: seq_len, prob: obs_prob},
     alpha: alpha,
     beta: beta
   ) do
-    states_range = 0..num_states-1
-
     Enum.flat_map((0..seq_len-2), fn(t) ->
-      denominator = for i <- states_range, j <- states_range do
-        curr_alpha = Matrix.get(alpha, {t, i})
-        curr_a = Model.A.get(a, {i, j})
-        curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
-        curr_beta = Matrix.get(beta, {t+1, j})
-
-        curr_alpha * curr_a * curr_b_map * curr_beta
-      end
-      |> Enum.sum
-
-      for i <- states_range, j <- states_range do
-        curr_alpha = Matrix.get(alpha, {t, i})
-        curr_a = Model.A.get(a, {i, j})
-        curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
-        curr_beta = Matrix.get(beta, {t+1, j})
-        numerator = curr_alpha * curr_a * curr_b_map * curr_beta
-
-        {{t, i, j}, numerator/denominator}
-      end
+      compute_xi_row(model, alpha, beta, obs_prob, t)
     end)
     |> Enum.into(Matrix.new({seq_len-1, num_states, num_states}))
+  end
+
+  defp compute_xi_row(%Model{a: a, n: num_states}, alpha, beta, obs_prob, t) do
+    states_range = 0..num_states-1
+
+    denominator = for i <- states_range, j <- states_range do
+      curr_alpha = Matrix.get(alpha, {t, i})
+      curr_a = Model.A.get(a, {i, j})
+      curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
+      curr_beta = Matrix.get(beta, {t+1, j})
+
+      curr_alpha * curr_a * curr_b_map * curr_beta
+    end
+    |> Enum.sum
+
+    for i <- states_range, j <- states_range do
+      curr_alpha = Matrix.get(alpha, {t, i})
+      curr_a = Model.A.get(a, {i, j})
+      curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
+      curr_beta = Matrix.get(beta, {t+1, j})
+      numerator = curr_alpha * curr_a * curr_b_map * curr_beta
+
+      {{t, i, j}, numerator/denominator}
+    end
   end
 
   @doc ~S"""
