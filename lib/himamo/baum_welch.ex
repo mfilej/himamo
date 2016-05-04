@@ -13,12 +13,11 @@ defmodule Himamo.BaumWelch do
     See functions in `Himamo.BaumWelch.StepE` for their definitions.
     """
 
-    defstruct [:alpha, :beta, :gamma, :xi, :alpha_times_beta]
+    defstruct [:alpha, :beta, :alpha_times_beta]
     @type t :: %__MODULE__{
       alpha: Matrix.t,
       beta: Matrix.t,
-      gamma: Matrix.t,
-      xi: Matrix.t,
+      alpha_times_beta: Matrix.t,
     }
   end
 
@@ -27,26 +26,17 @@ defmodule Himamo.BaumWelch do
   alias Himamo.BaumWelch.{StepE, StepM}
 
   @doc ~S"""
-  Computes variables for Baum-Welch E-step:
-
-    * `α` - `compute_alpha/2`
-    * `ß` - `compute_beta/2`
-    * `γ` - `compute_gamma/3`
-    * `ξ` - `compute_xi/3`
+  Computes variables for Baum-Welch E-step.
   """
   @spec compute_stats(Himamo.Model.t, Himamo.ObsSeq.t) :: Stats.t
   def compute_stats(model, obs_seq) do
     import StepE
     alpha = compute_alpha(model, obs_seq)
     beta = compute_beta(model, obs_seq)
-    xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-    gamma = compute_gamma(model, obs_seq, xi: xi)
     alpha_times_beta = compute_alpha_times_beta(alpha, beta)
     %Stats{
       alpha: alpha,
       beta: beta,
-      xi: xi,
-      gamma: gamma,
       alpha_times_beta: alpha_times_beta,
     }
   end
