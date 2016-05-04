@@ -1,5 +1,5 @@
 defmodule Himamo.TrainingTest do
-  alias Himamo.{Model, ObsSeq}
+  alias Himamo.Model
   use ExUnit.Case
 
   def a do
@@ -24,13 +24,8 @@ defmodule Himamo.TrainingTest do
     m: 3,
   }
 
-  def obs_seq do
-    ObsSeq.new([0, 1, 1, 2, 1, 0, 1])
-    |> ObsSeq.compute_prob(b)
-  end
-
   @tag :skip
   test "perform" do
-    Himamo.Training.perform(model, obs_seq, 1.0e-6)
+    Himamo.Training.train(model, [[0, 1, 1, 2, 1, 0, 1]], 1.0e-6)
   end
 end
