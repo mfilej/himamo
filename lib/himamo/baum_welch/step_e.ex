@@ -99,26 +99,18 @@ defmodule Himamo.BaumWelch.StepE do
   ) do
     states_range = 0..num_states-1
 
-    map_states_2d = fn(fun) ->
-      Stream.flat_map(states_range, fn(i) ->
-        Enum.map(states_range, fn(j) ->
-          fun.({i, j})
-        end)
-      end)
-    end
-
     Enum.flat_map((0..seq_len-2), fn(t) ->
-      denominator = map_states_2d.(fn({i, j}) ->
+      denominator = for i <- states_range, j <- states_range do
         curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
         curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
         curr_beta = Matrix.get(beta, {t+1, j})
 
         curr_alpha * curr_a * curr_b_map * curr_beta
-      end)
+      end
       |> Enum.sum
 
-      map_states_2d.(fn({i, j}) ->
+      for i <- states_range, j <- states_range do
         curr_alpha = Matrix.get(alpha, {t, i})
         curr_a = Model.A.get(a, {i, j})
         curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
@@ -126,7 +118,7 @@ defmodule Himamo.BaumWelch.StepE do
         numerator = curr_alpha * curr_a * curr_b_map * curr_beta
 
         {{t, i, j}, numerator/denominator}
-      end)
+      end
     end)
     |> Enum.into(Matrix.new({seq_len-1, num_states, num_states}))
   end
@@ -145,16 +137,14 @@ defmodule Himamo.BaumWelch.StepE do
   def compute_gamma(%Model{n: num_states}, obs_seq, xi: xi) do
     seq_len = obs_seq.len
 
-    Enum.flat_map(0..seq_len-2, fn(t) ->
-      Enum.map(0..num_states-1, fn(i) ->
-        sum = Enum.map(0..num_states-1, fn(j) ->
-          Matrix.get(xi, {t, i, j})
-        end)
-        |> Enum.sum
-
-        {{t, i}, sum}
+    for t <- 0..seq_len-2, i <- 0..num_states-1 do
+      sum = Enum.map(0..num_states-1, fn(j) ->
+        Matrix.get(xi, {t, i, j})
       end)
-    end)
+      |> Enum.sum
+
+      {{t, i}, sum}
+    end
     |> Enum.into(Matrix.new({seq_len-1, num_states}))
   end
 
@@ -167,10 +157,8 @@ defmodule Himamo.BaumWelch.StepE do
   @spec compute_alpha_times_beta(Matrix.t, Matrix.t) :: Matrix.t
   def compute_alpha_times_beta(%Matrix{size: size} = alpha, %Matrix{size: size} = beta) do
     {seq_len, num_states} = size
-    states_range = 0..num_states-1
-    obs_range = 0..seq_len-1
 
-    for t <- obs_range, i <- states_range do
+    for t <- 0..seq_len-1, i <- 0..num_states-1 do
       key = {t, i}
       value = Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
 
