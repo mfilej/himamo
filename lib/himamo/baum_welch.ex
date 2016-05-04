@@ -70,14 +70,4 @@ defmodule Himamo.BaumWelch do
       pi: reestimate_pi(model, stats_list),
     }
   end
-  @spec reestimate_model(Himamo.Model.t, Himamo.ObsSeq.t, Stats.t) :: Himamo.Model.t
-  def reestimate_model(model, obs_seq, stats) do
-    import StepM
-    %{model |
-      a: reestimate_a(model, [obs_seq], stats),
-      b: reestimate_b(model, obs_seq, stats),
-      pi: reestimate_pi(model, stats),
-    }
-  end
-
 end
