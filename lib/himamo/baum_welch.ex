@@ -1,5 +1,4 @@
 defmodule Himamo.BaumWelch do
-  alias Himamo.BaumWelch.{StepE, StepM}
   @moduledoc ~S"""
   Defines the Baum-Welch algorithm.
 
@@ -7,12 +6,68 @@ defmodule Himamo.BaumWelch do
   respective expectation and maximization steps.
   """
 
+  defmodule Stats do
+    @moduledoc ~S"""
+    Defines the statistical properties of an HMM.
+
+    See functions in `Himamo.BaumWelch.StepE` for their definitions.
+    """
+
+    defstruct [:alpha, :beta, :gamma, :xi]
+    @type t :: %__MODULE__{
+      alpha: Matrix.t,
+      beta: Matrix.t,
+      gamma: Matrix.t,
+      xi: Matrix.t,
+    }
+  end
+
+  @type stats_list :: [{Himamo.ObsSeq.t, Himamo.Model.probability, Stats.t}]
+
+  alias Himamo.BaumWelch.{StepE, StepM}
+
   @doc ~S"""
-  Returns a new model, maximized according to the given observation sequence.
+  Computes variables for Baum-Welch E-step:
+
+    * `α` - `compute_alpha/2`
+    * `ß` - `compute_beta/2`
+    * `γ` - `compute_gamma/3`
+    * `ξ` - `compute_xi/3`
   """
-  @spec perform(Himamo.Model.t, Himamo.ObsSeq.t) :: Himamo.Model.t
-  def perform(model, obs_seq) do
-    stats = StepE.compute(model, obs_seq)
-    StepM.reestimate(model, obs_seq, stats)
+  @spec compute_stats(Himamo.Model.t, Himamo.ObsSeq.t) :: Stats.t
+  def compute_stats(model, obs_seq) do
+    import StepE
+    alpha = compute_alpha(model, obs_seq)
+    beta = compute_beta(model, obs_seq)
+    xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+    gamma = compute_gamma(model, obs_seq, xi: xi)
+    %Stats{
+      alpha: alpha,
+      beta: beta,
+      xi: xi,
+      gamma: gamma,
+    }
+  end
+
+  @spec compute_stats_list(Himamo.Model.t, list(Himamo.ObsSeq.t)) :: stats_list
+  def compute_stats_list(model, obs_seq_list) do
+    for obs_seq <- obs_seq_list do
+      stats = compute_stats(model, obs_seq)
+      prob = Himamo.ForwardBackward.compute(stats.alpha)
+      {obs_seq, prob, stats}
+    end
+  end
+
+  @doc ~S"""
+  Returns a new HMM with re-estimated parameters `A`, `B`, and `π`.
+  """
+  @spec reestimate_model(Himamo.Model.t, Himamo.BaumWelch.stats_list) :: Himamo.Model.t
+  def reestimate_model(model, stats_list) do
+    import StepM
+    %{model |
+      a: reestimate_a(model, stats_list),
+      b: reestimate_b(model, stats_list),
+      pi: reestimate_pi(model, stats_list),
+    }
   end
 end

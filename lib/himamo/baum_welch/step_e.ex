@@ -1,41 +1,11 @@
 defmodule Himamo.BaumWelch.StepE do
   @moduledoc ~S"""
-  Defines the E-step of the Baum-Welch algorithm (Expectation).
+  Defines components of the E-step of the Baum-Welch algorithm (Expectation).
 
   Calculates required statistics for the given model.
   """
 
-  defstruct [:alpha, :beta, :gamma, :xi]
   alias Himamo.{Matrix, Model, ObsSeq}
-
-  @type t :: %__MODULE__{
-    alpha: Matrix.t,
-    beta: Matrix.t,
-    gamma: Matrix.t,
-    xi: Matrix.t,
-  }
-
-  @doc ~S"""
-  Computes variables for Baum-Welch E-step:
-
-    * `α` - `compute_alpha/2`
-    * `ß` - `compute_beta/2`
-    * `γ` - `compute_gamma/3`
-    * `ξ` - `compute_xi/3`
-  """
-  @spec compute(Model.t, ObsSeq.t) :: t
-  def compute(model, obs_seq) do
-    alpha = compute_alpha(model, obs_seq)
-    beta = compute_beta(model, obs_seq)
-    xi = compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-    gamma = compute_gamma(model, obs_seq, xi: xi)
-    %__MODULE__{
-      alpha: alpha,
-      beta: beta,
-      xi: xi,
-      gamma: gamma,
-    }
-  end
 
   @doc ~S"""
   Computes alpha variable for Baum-Welch.
@@ -55,7 +25,9 @@ defmodule Himamo.BaumWelch.StepE do
     # initialization
     first_row =
       for j <- states_range do
-        {{0, j}, Model.Pi.get(pi, j) * Model.ObsProb.get(obs_prob, {j, 0})}
+        lhs = Model.Pi.get(pi, j)
+        rhs = Model.ObsProb.get(obs_prob, {j, 0})
+        {{0, j}, lhs * rhs}
       end
       |> Enum.into(Matrix.new({seq_len, num_states}))
 

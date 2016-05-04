@@ -37,23 +37,11 @@ defmodule Himamo.BaumWelch.StepMTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  def step_e, do: BaumWelch.StepE.compute(model, obs_seq)
+  def stats, do: BaumWelch.compute_stats(model, obs_seq)
 
-  def reestimated_a, do: StepM.reestimate_a(model, obs_seq, step_e)
-  def reestimated_b, do: StepM.reestimate_b(model, obs_seq, step_e)
-  def reestimated_pi, do: StepM.reestimate_pi(model, step_e)
-
-  test "reestimate" do
-    %Model{
-      a: new_a, b: new_b, pi: new_pi
-    } = StepM.reestimate(model, obs_seq, step_e)
-
-    assert reestimated_a == new_a
-    assert reestimated_b == new_b
-    assert reestimated_pi == new_pi
-  end
-
-  test "reestimate_a" do
+  test "reestimate_a/2" do
+    stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
+    reestimated_a = StepM.reestimate_a(model, stats_list)
     expected = [
       {{0, 0}, 0.709503110},
       {{0, 1}, 0.290496890},
@@ -64,7 +52,30 @@ defmodule Himamo.BaumWelch.StepMTest do
     assert_all_in_delta(reestimated_a, expected)
   end
 
-  test "reestimate_b" do
+  test "reestimate_a/2 with multiple observations" do
+    obs_seq_list = [
+      [0, 0, 1],
+      [1, 2, 0],
+      [0, 2, 0],
+    ] |> Enum.map(fn seq ->
+      import ObsSeq
+      new(seq) |> compute_prob(b)
+    end)
+    stats_list = BaumWelch.compute_stats_list(model, obs_seq_list)
+    reestimated_a = StepM.reestimate_a(model, stats_list)
+    expected = [
+      {{0, 0}, 0.55489279742555900},
+      {{0, 1}, 0.44510720257444103},
+      {{1, 0}, 0.90894653036621130},
+      {{1, 1}, 0.09105346963378873},
+    ] |> Enum.into(Map.new)
+
+    assert_all_in_delta(reestimated_a, expected)
+  end
+
+  test "reestimate_b/2" do
+    stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
+    reestimated_b = StepM.reestimate_b(model, stats_list)
     expected = [
       {{0, 0}, 0.183004200},
       {{0, 1}, 0.615067920},
@@ -77,9 +88,33 @@ defmodule Himamo.BaumWelch.StepMTest do
     assert_all_in_delta(reestimated_b, expected)
   end
 
+  test "reestimate_b/2 with multiple observations" do
+    obs_seq_list = [
+      [0, 0, 1],
+      [1, 2, 0],
+      [0, 2, 0],
+    ] |> Enum.map(fn seq ->
+      import ObsSeq
+      new(seq) |> compute_prob(b)
+    end)
+    stats_list = BaumWelch.compute_stats_list(model, obs_seq_list)
+    reestimated_b = StepM.reestimate_b(model, stats_list)
+    expected = [
+      {{0, 0}, 0.37373281301098120},
+      {{0, 1}, 0.15770514678841493},
+      {{0, 2}, 0.46856204020060390},
+      {{1, 0}, 0.86523214464375410},
+      {{1, 1}, 0.06462876522537206},
+      {{1, 2}, 0.07013909013087392},
+    ] |> Enum.into(Map.new)
+
+    assert_all_in_delta(reestimated_b, expected)
+  end
+
   test "reestimate_pi" do
-    pi = reestimated_pi
-    assert_in_delta(Model.Pi.get(pi, 0), 0.41516738, 5.0e-9)
-    assert_in_delta(Model.Pi.get(pi, 1), 0.58483262, 5.0e-9)
+    stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
+    reestimated_pi = StepM.reestimate_pi(model, stats_list)
+    assert_in_delta(Model.Pi.get(reestimated_pi, 0), 0.41516738, 5.0e-9)
+    assert_in_delta(Model.Pi.get(reestimated_pi, 1), 0.58483262, 5.0e-9)
   end
 end

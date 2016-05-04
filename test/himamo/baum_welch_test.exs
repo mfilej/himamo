@@ -1,6 +1,5 @@
 defmodule Himamo.BaumWelchTest do
   use ExUnit.Case
-  import TestHelpers.AllInDelta
   alias Himamo.{BaumWelch, Model, ObsSeq}
 
   def a do
@@ -30,28 +29,51 @@ defmodule Himamo.BaumWelchTest do
     |> ObsSeq.compute_prob(b)
   end
 
-  test "performing Baum-Welch" do
-    new_model = BaumWelch.perform(model, obs_seq)
+  test "compute_stats" do
+    expected_alpha = alpha = BaumWelch.StepE.compute_alpha(model, obs_seq)
+    expected_beta = beta = BaumWelch.StepE.compute_beta(model, obs_seq)
+    expected_xi = xi = BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
+    expected_gamma = BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
 
-    expected_a = [
-      {{0, 0}, 0.709503110},
-      {{0, 1}, 0.290496890},
-      {{1, 0}, 0.948070330},
-      {{1, 1}, 0.051929667},
-    ] |> Enum.into(Map.new)
+    assert BaumWelch.compute_stats(model, obs_seq) == %BaumWelch.Stats{
+      alpha: expected_alpha,
+      beta: expected_beta,
+      gamma: expected_gamma,
+      xi: expected_xi,
+    }
+  end
 
-    expected_b = [
-      {{0, 0}, 0.183004200},
-      {{0, 1}, 0.615067920},
-      {{0, 2}, 0.201927880},
-      {{1, 0}, 0.681578330},
-      {{1, 1}, 0.233439370},
-      {{1, 2}, 0.084982295},
-    ] |> Enum.into(Map.new)
+  test "reestimate_model" do
+    stats_list = BaumWelch.compute_stats_list(model, [obs_seq])
+    expected_a = BaumWelch.StepM.reestimate_a(model, stats_list)
+    expected_b = BaumWelch.StepM.reestimate_b(model, stats_list)
+    expected_pi = BaumWelch.StepM.reestimate_pi(model, stats_list)
 
-    assert_all_in_delta(new_model.b, expected_b)
-    assert_all_in_delta(new_model.a, expected_a)
-    assert_in_delta(Model.Pi.get(new_model.pi, 0), 0.41516738, 5.0e-9)
-    assert_in_delta(Model.Pi.get(new_model.pi, 1), 0.58483262, 5.0e-9)
+    %Model{
+      a: a, b: b, pi: pi
+    } = BaumWelch.reestimate_model(model, stats_list)
+
+    assert a == expected_a
+    assert b == expected_b
+    assert pi == expected_pi
+  end
+
+  test "compute_stats_list" do
+    obs_seq_list = [obs_seq_1, obs_seq_2, obs_seq_3] = fn ->
+      import ObsSeq
+      [
+        compute_prob(new([0, 2, 1]), b),
+        compute_prob(new([1, 0, 1]), b),
+        compute_prob(new([2, 0, 0]), b),
+      ]
+    end.()
+    stats_1 = BaumWelch.compute_stats(model, obs_seq_1)
+    stats_2 = BaumWelch.compute_stats(model, obs_seq_2)
+    stats_3 = BaumWelch.compute_stats(model, obs_seq_3)
+    result = BaumWelch.compute_stats_list(model, obs_seq_list)
+
+    assert Enum.at(result, 0) == {obs_seq_1, -3.4076179494650780, stats_1}
+    assert Enum.at(result, 1) == {obs_seq_2, -3.5204540025120930, stats_2}
+    assert Enum.at(result, 2) == {obs_seq_3, -2.7895314429700933, stats_3}
   end
 end
