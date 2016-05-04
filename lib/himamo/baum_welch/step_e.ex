@@ -103,6 +103,7 @@ defmodule Himamo.BaumWelch.StepE do
     |> Enum.into(Matrix.new({seq_len-1, num_states, num_states}))
   end
 
+  @doc false
   def compute_xi_row(%Model{a: a, n: num_states}, alpha, beta, obs_prob, t) do
     states_range = 0..num_states-1
 
