@@ -92,43 +92,40 @@ defmodule Himamo.BaumWelch.StepE do
   """
   @spec compute_xi(Model.t, ObsSeq.t, [alpha: Matrix.t, beta: Matrix.t]) :: Matrix.t
   def compute_xi(
-    %Model{a: a, n: num_states},
+    %Model{n: num_states} = model,
     %ObsSeq{len: seq_len, prob: obs_prob},
     alpha: alpha,
     beta: beta
   ) do
-    states_range = 0..num_states-1
-
-    map_states_2d = fn(fun) ->
-      Stream.flat_map(states_range, fn(i) ->
-        Enum.map(states_range, fn(j) ->
-          fun.({i, j})
-        end)
-      end)
-    end
-
     Enum.flat_map((0..seq_len-2), fn(t) ->
-      denominator = map_states_2d.(fn({i, j}) ->
-        curr_alpha = Matrix.get(alpha, {t, i})
-        curr_a = Model.A.get(a, {i, j})
-        curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
-        curr_beta = Matrix.get(beta, {t+1, j})
-
-        curr_alpha * curr_a * curr_b_map * curr_beta
-      end)
-      |> Enum.sum
-
-      map_states_2d.(fn({i, j}) ->
-        curr_alpha = Matrix.get(alpha, {t, i})
-        curr_a = Model.A.get(a, {i, j})
-        curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
-        curr_beta = Matrix.get(beta, {t+1, j})
-        numerator = curr_alpha * curr_a * curr_b_map * curr_beta
-
-        {{t, i, j}, numerator/denominator}
-      end)
+      compute_xi_row(model, alpha, beta, obs_prob, t)
     end)
     |> Enum.into(Matrix.new({seq_len-1, num_states, num_states}))
+  end
+
+  @doc false
+  def compute_xi_row(%Model{a: a, n: num_states}, alpha, beta, obs_prob, t) do
+    states_range = 0..num_states-1
+
+    denominator = for i <- states_range, j <- states_range do
+      curr_alpha = Matrix.get(alpha, {t, i})
+      curr_a = Model.A.get(a, {i, j})
+      curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
+      curr_beta = Matrix.get(beta, {t+1, j})
+
+      curr_alpha * curr_a * curr_b_map * curr_beta
+    end
+    |> Enum.sum
+
+    for i <- states_range, j <- states_range do
+      curr_alpha = Matrix.get(alpha, {t, i})
+      curr_a = Model.A.get(a, {i, j})
+      curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
+      curr_beta = Matrix.get(beta, {t+1, j})
+      numerator = curr_alpha * curr_a * curr_b_map * curr_beta
+
+      {{t, i, j}, numerator/denominator}
+    end
   end
 
   @doc ~S"""
@@ -145,16 +142,33 @@ defmodule Himamo.BaumWelch.StepE do
   def compute_gamma(%Model{n: num_states}, obs_seq, xi: xi) do
     seq_len = obs_seq.len
 
-    Enum.flat_map(0..seq_len-2, fn(t) ->
-      Enum.map(0..num_states-1, fn(i) ->
-        sum = Enum.map(0..num_states-1, fn(j) ->
-          Matrix.get(xi, {t, i, j})
-        end)
-        |> Enum.sum
-
-        {{t, i}, sum}
+    for t <- 0..seq_len-2, i <- 0..num_states-1 do
+      sum = Enum.map(0..num_states-1, fn(j) ->
+        Matrix.get(xi, {t, i, j})
       end)
-    end)
+      |> Enum.sum
+
+      {{t, i}, sum}
+    end
     |> Enum.into(Matrix.new({seq_len-1, num_states}))
+  end
+
+  @doc ~S"""
+  Computes a Matrix where each element is `alpha_{t, i} * beta_{t, i}`.
+
+  This is not matrix multiplication. The result of the above expression is
+  used in multiple places, so the values are computed up front.
+  """
+  @spec compute_alpha_times_beta(Matrix.t, Matrix.t) :: Matrix.t
+  def compute_alpha_times_beta(%Matrix{size: size} = alpha, %Matrix{size: size} = beta) do
+    {seq_len, num_states} = size
+
+    for t <- 0..seq_len-1, i <- 0..num_states-1 do
+      key = {t, i}
+      value = Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
+
+      {key, value}
+    end
+    |> Enum.into(Matrix.new({seq_len, num_states}))
   end
 end

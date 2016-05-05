@@ -32,14 +32,12 @@ defmodule Himamo.BaumWelchTest do
   test "compute_stats" do
     expected_alpha = alpha = BaumWelch.StepE.compute_alpha(model, obs_seq)
     expected_beta = beta = BaumWelch.StepE.compute_beta(model, obs_seq)
-    expected_xi = xi = BaumWelch.StepE.compute_xi(model, obs_seq, alpha: alpha, beta: beta)
-    expected_gamma = BaumWelch.StepE.compute_gamma(model, obs_seq, xi: xi)
+    expected_albe = BaumWelch.StepE.compute_alpha_times_beta(alpha, beta)
 
     assert BaumWelch.compute_stats(model, obs_seq) == %BaumWelch.Stats{
       alpha: expected_alpha,
       beta: expected_beta,
-      gamma: expected_gamma,
-      xi: expected_xi,
+      alpha_times_beta: expected_albe,
     }
   end
 
