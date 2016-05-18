@@ -51,9 +51,7 @@ defmodule Himamo.BaumWelch.StepE do
               raise e
             end
           end
-          |> Enum.reduce(Logzero.const, fn element, sum ->
-            ext_log_sum(sum, element)
-          end)
+          |> sum_log_values
 
         product = ext_log_product(log_alpha, ext_log(b_j))
         {{t, j}, product}
@@ -78,20 +76,25 @@ defmodule Himamo.BaumWelch.StepE do
 
     # initialization
     last_row = for j <- states_range do
-      {{seq_len-1, j}, 1}
+      {{seq_len-1, j}, 0.0}
     end |> Enum.into(Matrix.new({seq_len, num_states}))
 
     # induction
     Enum.reduce((seq_len-2)..0, last_row, fn(t, partial_beta) ->
       for i <- states_range do
-        sum = for j <- states_range do
+        log_beta = for j <- states_range do
           transition_prob = Model.A.get(a, {i, j})
           emission_prob = Model.ObsProb.get(obs_prob, {j, t+1})
           prev_beta = Matrix.get(partial_beta, {t+1, j})
-          transition_prob * emission_prob * prev_beta
-        end |> Enum.sum
 
-        {{t, i}, sum}
+          ext_log_product(
+            ext_log(transition_prob),
+            ext_log_product(ext_log(emission_prob), prev_beta)
+          )
+        end
+        |> sum_log_values
+
+        {{t, i}, log_beta}
       end |> Enum.into(partial_beta)
     end)
   end
@@ -186,5 +189,11 @@ defmodule Himamo.BaumWelch.StepE do
       {key, value}
     end
     |> Enum.into(Matrix.new({seq_len, num_states}))
+  end
+
+  defp sum_log_values(enum) do
+    Enum.reduce(enum, Logzero.const, fn element, sum ->
+      ext_log_sum(sum, element)
+    end)
   end
 end
