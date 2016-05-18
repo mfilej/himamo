@@ -2,7 +2,7 @@ ExCheck.start()
 ExUnit.start()
 
 defmodule TestHelpers.AllInDelta do
-  import ExUnit.Assertions, only: [assert_in_delta: 3, assert_in_delta: 4]
+  import ExUnit.Assertions, only: [assert_in_delta: 3]
 
   def assert_all_in_delta(actual, expected, delta \\ 5.0e-9)
   def assert_all_in_delta(%Himamo.Matrix{map: map} = _actual, expected, delta)
