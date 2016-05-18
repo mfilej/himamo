@@ -1,4 +1,7 @@
 defmodule Himamo.BaumWelch.StepE do
+  alias Himamo.Logzero
+  import Logzero
+
   @moduledoc ~S"""
   Defines components of the E-step of the Baum-Welch algorithm (Expectation).
 
@@ -27,20 +30,33 @@ defmodule Himamo.BaumWelch.StepE do
       for j <- states_range do
         lhs = Model.Pi.get(pi, j)
         rhs = Model.ObsProb.get(obs_prob, {j, 0})
-        {{0, j}, lhs * rhs}
+        product = ext_log_product(ext_log(lhs), ext_log(rhs))
+        {{0, j}, product}
       end
       |> Enum.into(Matrix.new({seq_len, num_states}))
 
     # induction
     Enum.reduce(obs_range, first_row, fn(t, partial_alpha) ->
       for j <- states_range do
-        rhs = Model.ObsProb.get(obs_prob, {j, t})
-        sum =
+        b_j = Model.ObsProb.get(obs_prob, {j, t})
+        log_alpha =
           for i <- states_range do
-            Matrix.get(partial_alpha, {t-1, i}) * Model.A.get(a, {i, j})
-          end |> Enum.sum
+            try do
+            ext_log_product(
+              Matrix.get(partial_alpha, {t-1, i}),
+              ext_log(Model.A.get(a, {i, j}))
+            )
+            rescue e in [ArithmeticError] ->
+              IO.inspect({partial_alpha, t, j, i})
+              raise e
+            end
+          end
+          |> Enum.reduce(Logzero.const, fn element, sum ->
+            ext_log_sum(sum, element)
+          end)
 
-        {{t, j}, rhs * sum}
+        product = ext_log_product(log_alpha, ext_log(b_j))
+        {{t, j}, product}
       end
       |> Enum.into(partial_alpha)
     end)
