@@ -5,7 +5,7 @@ defmodule Himamo.BaumWelch.StepM do
   Maximizes the model's parameters.
   """
 
-  alias Himamo.{Matrix, Model, ObsSeq}
+  alias Himamo.{Matrix, Model, ObsSeq, Logzero}
   alias Himamo.BaumWelch.Stats
 
   @doc ~S"""
@@ -121,7 +121,8 @@ defmodule Himamo.BaumWelch.StepM do
       for j <- states_range do
         Matrix.get(row, {0, i, j})
       end
-      |> Enum.sum
+      |> Logzero.sum_log_values
+      |> Logzero.ext_exp
     end
     |> Model.Pi.new
   end
