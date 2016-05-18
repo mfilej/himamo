@@ -199,10 +199,4 @@ defmodule Himamo.BaumWelch.StepE do
     end
     |> Enum.into(Matrix.new({seq_len, num_states}))
   end
-
-  defp sum_log_values(enum) do
-    Enum.reduce(enum, Logzero.const, fn element, sum ->
-      ext_log_sum(sum, element)
-    end)
-  end
 end
