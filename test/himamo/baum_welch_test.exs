@@ -70,8 +70,8 @@ defmodule Himamo.BaumWelchTest do
     stats_3 = BaumWelch.compute_stats(model, obs_seq_3)
     result = BaumWelch.compute_stats_list(model, obs_seq_list)
 
-    assert Enum.at(result, 0) == {obs_seq_1, -3.4076179494650780, stats_1}
-    assert Enum.at(result, 1) == {obs_seq_2, -3.5204540025120930, stats_2}
-    assert Enum.at(result, 2) == {obs_seq_3, -2.7895314429700933, stats_3}
+    assert Enum.at(result, 0) == {obs_seq_1, -3.40761794946507800, stats_1}
+    assert Enum.at(result, 1) == {obs_seq_2, -3.52045400251209360, stats_2}
+    assert Enum.at(result, 2) == {obs_seq_3, -2.78953144297009373, stats_3}
   end
 end

@@ -193,7 +193,9 @@ defmodule Himamo.BaumWelch.StepE do
 
     for t <- 0..seq_len-1, i <- 0..num_states-1 do
       key = {t, i}
-      value = Matrix.get(alpha, {t, i}) * Matrix.get(beta, {t, i})
+      curr_log_alpha = Matrix.get(alpha, {t, i})
+      curr_log_beta = Matrix.get(beta, {t, i})
+      value = ext_log_product(curr_log_alpha, curr_log_beta)
 
       {key, value}
     end
