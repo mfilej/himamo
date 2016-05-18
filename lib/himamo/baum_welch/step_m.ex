@@ -75,7 +75,11 @@ defmodule Himamo.BaumWelch.StepM do
             increment = Matrix.get(albe, {t, j})
             denom = denom + increment
 
-            if o == k, do: numer = numer + increment
+            numer = if o == k do
+              numer + increment
+            else
+              numer
+            end
 
             {numer, denom}
           end)
