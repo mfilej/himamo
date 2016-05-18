@@ -126,24 +126,33 @@ defmodule Himamo.BaumWelch.StepE do
   def compute_xi_row(%Model{a: a, n: num_states}, alpha, beta, obs_prob, t) do
     states_range = 0..num_states-1
 
-    denominator = for i <- states_range, j <- states_range do
+    log_xi = for i <- states_range, j <- states_range do
       curr_alpha = Matrix.get(alpha, {t, i})
       curr_a = Model.A.get(a, {i, j})
       curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
       curr_beta = Matrix.get(beta, {t+1, j})
 
-      curr_alpha * curr_a * curr_b_map * curr_beta
+      product = ext_log_product(
+        curr_alpha,
+        ext_log_product(
+          ext_log(curr_a),
+          ext_log_product(
+            ext_log(curr_b_map),
+            curr_beta)))
+
+      {{i, j}, product}
     end
-    |> Enum.sum
+    |> Enum.into(Matrix.new({num_states, num_states}))
+
+    normalizer = Enum.reduce(log_xi.map, Logzero.const, fn {{_i, _j}, element}, sum ->
+      ext_log_sum(sum, element)
+    end)
 
     for i <- states_range, j <- states_range do
-      curr_alpha = Matrix.get(alpha, {t, i})
-      curr_a = Model.A.get(a, {i, j})
-      curr_b_map = Model.ObsProb.get(obs_prob, {j, t+1})
-      curr_beta = Matrix.get(beta, {t+1, j})
-      numerator = curr_alpha * curr_a * curr_b_map * curr_beta
+      curr_log_xi = Matrix.get(log_xi, {i, j})
+      product = ext_log_product(curr_log_xi, -normalizer)
 
-      {{t, i, j}, numerator/denominator}
+      {{t, i, j}, product}
     end
   end
 
