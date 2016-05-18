@@ -59,8 +59,8 @@ defmodule Himamo.BaumWelch.StepM do
 
     Enum.flat_map(stats_list, fn({
       %ObsSeq{seq: observations},
-      prob_k,
-      %Stats{alpha_times_beta: albe}
+      _prob_k,
+      %Stats{gamma: gamma}
     }) ->
 
       observations = List.delete_at(observations, -1)
@@ -68,12 +68,13 @@ defmodule Himamo.BaumWelch.StepM do
       for j <- states_range, k <- symbols_range do
         {numerator, denominator} =
           Stream.with_index(observations)
-          |> Enum.reduce({0, 0}, fn({o, t}, {numer, denom}) ->
-            increment = Matrix.get(albe, {t, j})
-            denom = denom + increment
+          |> Enum.reduce({Logzero.const, Logzero.const}, fn({o, t}, {numer, denom}) ->
+            curr_log_gamma = Matrix.get(gamma, {t, j})
+
+            denom = ext_log_sum(denom, curr_log_gamma)
 
             numer = if o == k do
-              numer + increment
+              ext_log_sum(numer, curr_log_gamma)
             else
               numer
             end
@@ -81,7 +82,7 @@ defmodule Himamo.BaumWelch.StepM do
             {numer, denom}
           end)
 
-        {{j, k}, {numerator * prob_k, denominator * prob_k}}
+        {{j, k}, {numerator, denominator}}
       end
     end)
     |> sum_fraction_parts
