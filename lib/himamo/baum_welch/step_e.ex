@@ -174,7 +174,7 @@ defmodule Himamo.BaumWelch.StepE do
       sum = Enum.map(0..num_states-1, fn(j) ->
         Matrix.get(xi, {t, i, j})
       end)
-      |> Enum.sum
+      |> sum_log_values
 
       {{t, i}, sum}
     end
