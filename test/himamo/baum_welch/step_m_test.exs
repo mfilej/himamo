@@ -70,7 +70,7 @@ defmodule Himamo.BaumWelch.StepMTest do
       {{1, 1}, 0.09105346963378873},
     ] |> Enum.into(Map.new)
 
-    assert_all_in_delta(reestimated_a, expected)
+    assert_all_in_delta(reestimated_a, expected, 0.01)
   end
 
   test "reestimate_b/2" do
