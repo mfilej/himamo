@@ -41,15 +41,10 @@ defmodule Himamo.BaumWelch.StepE do
         b_j = Model.ObsProb.get(obs_prob, {j, t})
         log_alpha =
           for i <- states_range do
-            try do
             ext_log_product(
               Matrix.get(partial_alpha, {t-1, i}),
               ext_log(Model.A.get(a, {i, j}))
             )
-            rescue e in [ArithmeticError] ->
-              IO.inspect({partial_alpha, t, j, i})
-              raise e
-            end
           end
           |> sum_log_values
 
