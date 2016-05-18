@@ -69,4 +69,11 @@ defmodule Himamo.Logzero do
   def ext_log_product(log_x, log_y) when is_float(log_x) and is_float(log_y) do
     log_x + log_y
   end
+
+  @doc false
+  def sum_log_values(enum) do
+    Enum.reduce(enum, const, fn element, sum ->
+      ext_log_sum(sum, element)
+    end)
+  end
 end

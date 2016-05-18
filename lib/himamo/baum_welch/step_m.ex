@@ -5,8 +5,10 @@ defmodule Himamo.BaumWelch.StepM do
   Maximizes the model's parameters.
   """
 
-  alias Himamo.{Matrix, Model, ObsSeq}
+  alias Himamo.{Matrix, Model, ObsSeq, Logzero}
   alias Himamo.BaumWelch.Stats
+
+  import Logzero
 
   @doc ~S"""
   Re-estimates the `A` variable.
@@ -18,33 +20,28 @@ defmodule Himamo.BaumWelch.StepM do
   This is part of the _M_ step of Baum-Welch.
   """
   @spec reestimate_a(Model.t, Himamo.BaumWelch.stats_list) :: Matrix.t
-  def reestimate_a(%Model{a: a, n: num_states}, stats_list) do
+  def reestimate_a(%Model{n: num_states}, stats_list) do
     states_range = 0..num_states-1
 
     Stream.flat_map(stats_list, fn({
-      %ObsSeq{len: obs_len, prob: obs_prob},
-      prob_k,
-      %Stats{alpha: alpha, beta: beta, alpha_times_beta: albe}
+      %ObsSeq{len: obs_len},
+      _prob_k,
+      %Stats{xi: xi, gamma: gamma}
     }) ->
 
       for i <- states_range, j <- states_range do
         {numerator, denominator} =
           Enum.map(0..obs_len-2, fn (t) ->
-            numer =
-              Matrix.get(alpha, {t, i}) *
-              Model.A.get(a, {i, j}) *
-              Model.ObsProb.get(obs_prob, {j, t+1}) *
-              Matrix.get(beta, {t+1, j})
-            denom =
-              Matrix.get(albe, {t, i})
+            curr_log_xi = Matrix.get(xi, {t, i, j})
+            curr_log_gamma = Matrix.get(gamma, {t, i})
 
-            {numer, denom}
+            {curr_log_xi, curr_log_gamma}
           end)
-          |> Enum.reduce({0, 0}, fn ({numer, denom}, {numer_sum, denom_sum}) ->
-            {numer_sum + numer, denom_sum + denom}
+          |> Enum.reduce({Logzero.const, Logzero.const}, fn ({numer, denom}, {numer_sum, denom_sum}) ->
+            {ext_log_sum(numer_sum, numer), ext_log_sum(denom_sum, denom)}
           end)
 
-        {{i, j}, {numerator * prob_k, denominator * prob_k}}
+        {{i, j}, {numerator, denominator}}
       end
     end)
     |> sum_fraction_parts
@@ -62,8 +59,8 @@ defmodule Himamo.BaumWelch.StepM do
 
     Enum.flat_map(stats_list, fn({
       %ObsSeq{seq: observations},
-      prob_k,
-      %Stats{alpha_times_beta: albe}
+      _prob_k,
+      %Stats{gamma: gamma}
     }) ->
 
       observations = List.delete_at(observations, -1)
@@ -71,16 +68,21 @@ defmodule Himamo.BaumWelch.StepM do
       for j <- states_range, k <- symbols_range do
         {numerator, denominator} =
           Stream.with_index(observations)
-          |> Enum.reduce({0, 0}, fn({o, t}, {numer, denom}) ->
-            increment = Matrix.get(albe, {t, j})
-            denom = denom + increment
+          |> Enum.reduce({Logzero.const, Logzero.const}, fn({o, t}, {numer, denom}) ->
+            curr_log_gamma = Matrix.get(gamma, {t, j})
 
-            if o == k, do: numer = numer + increment
+            denom = ext_log_sum(denom, curr_log_gamma)
+
+            numer = if o == k do
+              ext_log_sum(numer, curr_log_gamma)
+            else
+              numer
+            end
 
             {numer, denom}
           end)
 
-        {{j, k}, {numerator * prob_k, denominator * prob_k}}
+        {{j, k}, {numerator, denominator}}
       end
     end)
     |> sum_fraction_parts
@@ -90,14 +92,14 @@ defmodule Himamo.BaumWelch.StepM do
 
   defp sum_fraction_parts(fractions) do
     Enum.reduce(fractions, Map.new, fn({{_i, _j} = key, {numer, denom}}, sums) ->
-      {curr_numer, curr_denom} = Map.get(sums, key, {0, 0})
-      Map.put(sums, key, {numer + curr_numer, denom + curr_denom})
+      {curr_numer, curr_denom} = Map.get(sums, key, {Logzero.const, Logzero.const})
+      Map.put(sums, key, {ext_log_sum(numer, curr_numer), ext_log_sum(denom, curr_denom)})
     end)
   end
 
   defp fractions_to_numbers(fractions) do
     Stream.map(fractions, fn({key, {numerator, denominator}}) ->
-      {key, numerator/denominator}
+      {key, ext_exp(ext_log_product(numerator, -denominator))}
     end)
   end
 
@@ -121,7 +123,8 @@ defmodule Himamo.BaumWelch.StepM do
       for j <- states_range do
         Matrix.get(row, {0, i, j})
       end
-      |> Enum.sum
+      |> Logzero.sum_log_values
+      |> Logzero.ext_exp
     end
     |> Model.Pi.new
   end
