@@ -43,6 +43,8 @@ defmodule Himamo.Training do
   end
 
   defp multiply_probabilities(probabilities) do
-    Enum.reduce(probabilities, 1, fn(prob, product) -> product * prob end)
+    Enum.reduce(probabilities, fn(prob, product) ->
+      Himamo.Logzero.ext_log_product(product, prob)
+    end)
   end
 end
