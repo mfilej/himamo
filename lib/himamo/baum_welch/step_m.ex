@@ -25,7 +25,7 @@ defmodule Himamo.BaumWelch.StepM do
 
     Stream.flat_map(stats_list, fn({
       %ObsSeq{len: obs_len},
-      _prob_k,
+      prob_k,
       %Stats{xi: xi, gamma: gamma}
     }) ->
 
@@ -41,7 +41,7 @@ defmodule Himamo.BaumWelch.StepM do
             {ext_log_sum(numer_sum, numer), ext_log_sum(denom_sum, denom)}
           end)
 
-        {{i, j}, {numerator, denominator}}
+        {{i, j}, {ext_log_product(numerator, prob_k), ext_log_product(denominator, prob_k)}}
       end
     end)
     |> sum_fraction_parts
@@ -59,7 +59,7 @@ defmodule Himamo.BaumWelch.StepM do
 
     Enum.flat_map(stats_list, fn({
       %ObsSeq{seq: observations},
-      _prob_k,
+      prob_k,
       %Stats{gamma: gamma}
     }) ->
 
@@ -82,7 +82,7 @@ defmodule Himamo.BaumWelch.StepM do
             {numer, denom}
           end)
 
-        {{j, k}, {numerator, denominator}}
+        {{j, k}, {ext_log_product(numerator, prob_k), ext_log_product(denominator, prob_k)}}
       end
     end)
     |> sum_fraction_parts
