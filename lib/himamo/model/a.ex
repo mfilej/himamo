@@ -16,8 +16,6 @@ defmodule Himamo.Model.A do
       ...> Himamo.Model.A.get(a, {1, 2})
       0.1
   """
-  defstruct [:map, :n]
-
   @type t :: Himamo.Matrix.t
   @type transition :: {Himamo.Model.state, Himamo.Model.state}
 
