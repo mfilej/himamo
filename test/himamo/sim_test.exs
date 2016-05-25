@@ -21,7 +21,7 @@ defmodule Himamo.SimTest do
   def model, do: %Model{
     a: a,
     b: b,
-    pi: Model.Pi.new([1.0, 0.0, 0,0]),
+    pi: Model.Pi.new([1.0, 0.0, 0.0]),
     n: 3,
     m: 3,
   }
