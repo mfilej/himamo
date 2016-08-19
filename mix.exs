@@ -2,12 +2,16 @@ defmodule Himamo.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :himamo,
-     version: "0.0.1",
-     elixir: "~> 1.2",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps]
+    [
+      app: :himamo,
+      version: "0.0.1",
+      elixir: "~> 1.2",
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      deps: deps(),
+      package: package(),
+      description: "Discrete Hidden Markov Models.",
+   ]
   end
 
   # Configuration for the OTP application
@@ -33,6 +37,15 @@ defmodule Himamo.Mixfile do
 
       {:excheck, "~> 0.3", only: :test},
       {:triq, github: "krestenkrab/triq", only: :test},
+    ]
+  end
+
+  defp package do
+    [
+      files: ~w(lib mix.exs README.md LICENSE),
+      maintainers: ["Miha Filej"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/mfilej/himamo"},
     ]
   end
 end
