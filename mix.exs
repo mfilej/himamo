@@ -11,6 +11,8 @@ defmodule Himamo.Mixfile do
       deps: deps(),
       package: package(),
       description: "Discrete Hidden Markov Models.",
+      source_url: "https://github.com/mfilej/himamo",
+      docs: [main: "Himamo"],
    ]
   end
 
