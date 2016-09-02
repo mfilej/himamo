@@ -1,6 +1,7 @@
 defmodule Himamo.SimTest do
   use ExUnit.Case
   alias Himamo.{Sim, Model}
+  doctest Sim
 
   def a do
     import Model.A, only: [new: 1, put: 3]

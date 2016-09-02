@@ -1,10 +1,46 @@
 defmodule Himamo.Sim do
+  @moduledoc """
+  Defines the required functions to simulate a model.
+
+  ## Example
+
+      iex> # State transition probabilities - ensure the model transitions at
+      ...> # each step.
+      ...> a = fn ->
+      ...>   import Himamo.Model.A, only: [new: 1, put: 3]
+      ...>   new(2)
+      ...>   |> put({0, 0}, 0.0) |> put({0, 1}, 1.0)
+      ...>   |> put({1, 0}, 1.0) |> put({1, 1}, 0.0)
+      ...> end.()
+      ...>
+      ...> # Symbol emission probabilities - model always emits symbol 0 when
+      ...> # in state 0 and symbol 1 when in state 1.
+      ...> b = fn ->
+      ...>   import Himamo.Model.B, only: [new: 1, put: 3]
+      ...>   new(n: 2, m: 2)
+      ...>   |> put({0, 0}, 1.0) |> put({0, 1}, 0.0)
+      ...>   |> put({1, 0}, 0.0) |> put({1, 1}, 1.0)
+      ...> end.()
+      ...> model = %Himamo.Model{
+      ...>   n: 2, m: 2,
+      ...>   a: a, b: b,
+      ...>   pi: Himamo.Model.Pi.new([1.0, 0.0]), # Start in state 0
+      ...> }
+      ...>
+      ...> # Generate 5 symbols:
+      ...> Himamo.Sim.simulate(model, 5)
+      [0, 1, 0, 1, 0]
+  """
+
   defstruct [:model, :state]
 
-  def simulate(model, len) do
+  @doc """
+  Simulate given `model` emitting `count` symbols.
+  """
+  def simulate(model, count) do
     initial_state = pick_initial_state(model.pi)
     sim = %__MODULE__{model: model, state: initial_state}
-    generate(sim, len)
+    generate(sim, count)
   end
 
   defp generate(sim, len) do
