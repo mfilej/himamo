@@ -13,11 +13,11 @@ defmodule Himamo.Training do
     perform({initial_model, initial_stats_list, initial_prob}, obs_seqs, epsilon, 100, 1.0)
   end
   def perform(result, _, epsilon, _, delta) when delta < epsilon do
-    IO.puts "done (delta (#{delta}) < epsilon(#{epsilon})"
+    debug "done (delta (#{delta}) < epsilon(#{epsilon})"
     result
   end
   def perform(result, _, _, iter_left, _) when iter_left < 1 do
-    IO.puts "done (last iteration)"
+    debug "done (last iteration)"
     result
   end
   def perform({model, stats_list, prob}, obs_seqs, epsilon, iter_left, _) do
@@ -26,7 +26,7 @@ defmodule Himamo.Training do
 
     delta = abs(prob - new_prob)
 
-    IO.puts "iter_left=#{iter_left}, p=#{new_prob}, d=#{delta}, e=#{epsilon}"
+    debug "iter_left=#{iter_left}, p=#{new_prob}, d=#{delta}, e=#{epsilon}"
 
     perform({new_model, new_stats, new_prob}, obs_seqs, epsilon, iter_left-1, delta)
   end
@@ -46,5 +46,11 @@ defmodule Himamo.Training do
     Enum.reduce(probabilities, fn(prob, product) ->
       Himamo.Logzero.ext_log_product(product, prob)
     end)
+  end
+
+  defp debug(message) do
+    if Mix.debug? do
+      IO.puts(:stderr, message)
+    end
   end
 end
