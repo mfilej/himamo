@@ -36,7 +36,7 @@ defmodule Himamo.Sim do
     end
   end
 
-  defp pick_random(state_probs, rand_val \\ :random.uniform) do
+  defp pick_random(state_probs, rand_val \\ :rand.uniform) do
     result = Enum.reduce_while(state_probs, 0.0, fn {prob, index}, current_val ->
       current_val = current_val + prob
 
@@ -51,12 +51,5 @@ defmodule Himamo.Sim do
       {:new_state, index} -> index
       _ -> raise("Unable to pick new state")
     end
-  end
-
-  @on_load :seed_random
-  @doc false
-  def seed_random do
-    :random.seed(:os.timestamp())
-    :ok
   end
 end
