@@ -1,4 +1,13 @@
 defmodule Himamo.ObsSeq do
+  @moduledoc ~S"""
+  Defines an observation sequence.
+
+  ## Examples
+
+      iex> Himamo.ObsSeq.new([0, 0, 1, 0, 1])
+      %Himamo.ObsSeq{len: 5, prob: nil, seq: [0, 0, 1, 0, 1]}
+  """
+
   defstruct [:seq, :len, :prob]
 
   @type sequence :: list(Himamo.Model.symbol)
