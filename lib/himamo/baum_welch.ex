@@ -15,11 +15,11 @@ defmodule Himamo.BaumWelch do
 
     defstruct [:alpha, :beta, :gamma, :xi, :alpha_times_beta]
     @type t :: %__MODULE__{
-      alpha: Matrix.t,
-      beta: Matrix.t,
-      gamma: Matrix.t,
-      xi: Matrix.t,
-      alpha_times_beta: Matrix.t,
+      alpha: Himamo.Matrix.t,
+      beta: Himamo.Matrix.t,
+      gamma: Himamo.Matrix.t,
+      xi: Himamo.Matrix.t,
+      alpha_times_beta: Himamo.Matrix.t,
     }
   end
 

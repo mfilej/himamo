@@ -11,18 +11,19 @@ defmodule Himamo.ObsSeq do
   defstruct [:seq, :len, :prob]
 
   @type sequence :: list(Himamo.Model.symbol)
-  @type t :: %__MODULE__{
+  @type obs_seq(prob) :: %__MODULE__{
     seq: sequence,
     len: non_neg_integer,
-    prob: Himamo.Model.ObsProb.t,
+    prob: prob,
   }
+  @type t :: obs_seq(Himamo.Model.ObsProb.t)
 
-  @spec new(sequence) :: t
+  @spec new(sequence) :: obs_seq(nil)
   def new(sequence) do
     %__MODULE__{seq: sequence, len: length(sequence)}
   end
 
-  @spec compute_prob(t, Himamo.Model.B.t) :: t
+  @spec compute_prob(obs_seq(nil) | t, Himamo.Model.B.t) :: t
   def compute_prob(%__MODULE__{seq: sequence} = obs, b) do
     %{obs | prob: Himamo.Model.ObsProb.new(b, sequence)}
   end

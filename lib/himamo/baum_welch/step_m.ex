@@ -46,7 +46,7 @@ defmodule Himamo.BaumWelch.StepM do
     end)
     |> sum_fraction_parts
     |> fractions_to_numbers
-    |> into_matrix({num_states, num_states})
+    |> Enum.into(Himamo.Model.A.new(num_states))
   end
 
   @doc ~S"""
@@ -87,7 +87,7 @@ defmodule Himamo.BaumWelch.StepM do
     end)
     |> sum_fraction_parts
     |> fractions_to_numbers
-    |> into_matrix({num_states, num_symbols})
+    |> Enum.into(Himamo.Model.B.new(n: num_states, m: num_symbols))
   end
 
   defp sum_fraction_parts(fractions) do
@@ -101,10 +101,6 @@ defmodule Himamo.BaumWelch.StepM do
     Stream.map(fractions, fn({key, {numerator, denominator}}) ->
       {key, ext_exp(ext_log_product(numerator, -denominator))}
     end)
-  end
-
-  defp into_matrix(enumerable, size) do
-    Enum.into(enumerable, Matrix.new(size))
   end
 
   @doc ~S"""

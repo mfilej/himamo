@@ -27,7 +27,7 @@ defmodule Himamo.Model.B do
   def new(kwargs) do
     m = Keyword.fetch!(kwargs, :m)
     n = Keyword.fetch!(kwargs, :n)
-    Himamo.Matrix.new({m, n})
+    Himamo.Matrix.new({n, m})
   end
 
   @doc ~S"""
@@ -35,7 +35,7 @@ defmodule Himamo.Model.B do
   """
   @spec get(t, emission) :: Himamo.Model.probability
   def get(b, {j, v}) do
-    Himamo.Matrix.get(b, {v, j})
+    Himamo.Matrix.get(b, {j, v})
   end
 
   @doc ~S"""
@@ -43,12 +43,12 @@ defmodule Himamo.Model.B do
   """
   @spec put(t, emission, Himamo.Model.probability) :: t
   def put(b, {j, v} ,val) do
-    Himamo.Matrix.put(b, {v, j}, val)
+    Himamo.Matrix.put(b, {j, v}, val)
   end
 
   @doc ~S"""
   Returns total number of states.
   """
   @spec num_states(t) :: pos_integer
-  def num_states(%Himamo.Matrix{size: {_alphabet_size, num_states}}), do: num_states
+  def num_states(%Himamo.Matrix{size: {num_states, _alphabet_size}}), do: num_states
 end

@@ -7,21 +7,15 @@ defmodule Himamo.BaumWelch.StepMTest do
   def a do
     import Model.A, only: [new: 1, put: 3]
     new(2)
-    |> put({0, 0}, 0.6)
-    |> put({0, 1}, 0.4)
-    |> put({1, 0}, 0.9)
-    |> put({1, 1}, 0.1)
+    |> put({0, 0}, 0.6) |> put({0, 1}, 0.4)
+    |> put({1, 0}, 0.9) |> put({1, 1}, 0.1)
   end
 
   def b do
     import Model.B, only: [new: 1, put: 3]
     new(n: 2, m: 3)
-    |> put({0, 0}, 0.3)
-    |> put({0, 1}, 0.3)
-    |> put({0, 2}, 0.4)
-    |> put({1, 0}, 0.8)
-    |> put({1, 1}, 0.1)
-    |> put({1, 2}, 0.1)
+    |> put({0, 0}, 0.3) |> put({0, 1}, 0.3) |> put({0, 2}, 0.4)
+    |> put({1, 0}, 0.8) |> put({1, 1}, 0.1) |> put({1, 2}, 0.1)
   end
 
   def model, do: %Model{

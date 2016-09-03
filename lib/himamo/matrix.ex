@@ -66,7 +66,7 @@ defmodule Himamo.Matrix do
   def put(%__MODULE__{map: map, size: size} = matrix, position, entry) do
     validate_position_within_size!(position, size)
     new_map = Map.put(map, position, entry)
-    %__MODULE__{matrix | map: new_map}
+    %__MODULE__{size: size, map: new_map}
   end
 
   defp validate_position_within_size!(position, size) do
