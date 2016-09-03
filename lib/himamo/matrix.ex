@@ -63,7 +63,7 @@ defmodule Himamo.Matrix do
   matrix.
   """
   @spec put(t, position, entry) :: t
-  def put(%__MODULE__{map: map, size: size} = matrix, position, entry) do
+  def put(%__MODULE__{map: map, size: size}, position, entry) do
     validate_position_within_size!(position, size)
     new_map = Map.put(map, position, entry)
     %__MODULE__{size: size, map: new_map}
