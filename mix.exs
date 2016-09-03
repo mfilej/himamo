@@ -36,7 +36,7 @@ defmodule Himamo.Mixfile do
     [
       {:ex_doc, "~> 0.13", only: :dev},
 
-      {:excheck, "~> 0.3", only: :test},
+      {:excheck, "~> 0.5", only: :test},
       {:triq, github: "krestenkrab/triq", only: :test},
     ]
   end
