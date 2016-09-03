@@ -8,7 +8,7 @@ Add `himamo` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:himamo, "~> 0.0.1"}]
+  [{:himamo, "~> 0.1.0"}]
 end
 ```
 
